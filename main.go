@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"go-systemd-docker/cmd"
+)
 
 func main() {
-	fmt.Println("Hello world from go-systemd-docker")
+	cmd.Execute()
 }
