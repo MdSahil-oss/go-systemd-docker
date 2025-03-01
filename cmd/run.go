@@ -13,5 +13,9 @@ var runCmd = &cobra.Command{
 	e.g. sysd run registered-container-name`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("sysd run")
+
+		if *flgs.namePersistentFlag != "" {
+			fmt.Println("Provided name:", *flgs.namePersistentFlag)
+		}
 	},
 }

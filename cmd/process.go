@@ -14,5 +14,9 @@ var processCmd = &cobra.Command{
 	e.g. sysd ps`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("sysd ps")
+
+		if *flgs.namePersistentFlag != "" {
+			fmt.Println("Provided name:", *flgs.namePersistentFlag)
+		}
 	},
 }

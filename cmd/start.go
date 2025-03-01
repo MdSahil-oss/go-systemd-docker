@@ -13,5 +13,9 @@ var startCmd = &cobra.Command{
 	e.g. sysd start registered-systemd-instance-name`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("sysd start")
+
+		if *flgs.namePersistentFlag != "" {
+			fmt.Println("Provided name:", *flgs.namePersistentFlag)
+		}
 	},
 }

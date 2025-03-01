@@ -14,5 +14,9 @@ var deleteCmd = &cobra.Command{
 	e.g. sysd delete container-image-name`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("sysd delete...")
+
+		if *flgs.namePersistentFlag != "" {
+			fmt.Println("Provided name:", *flgs.namePersistentFlag)
+		}
 	},
 }

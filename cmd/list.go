@@ -14,5 +14,9 @@ var listCmd = &cobra.Command{
 	e.g. sysd ls`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println("sysd ls")
+
+		if *flgs.namePersistentFlag != "" {
+			fmt.Println("Provided name:", *flgs.namePersistentFlag)
+		}
 	},
 }
