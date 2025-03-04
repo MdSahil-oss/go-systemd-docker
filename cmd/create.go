@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"log"
-	"os"
+	"go-systemd-docker/system"
+	"go-systemd-docker/utils"
 
 	"github.com/kardianos/service"
 	"github.com/spf13/cobra"
@@ -41,8 +41,7 @@ var createCmd = &cobra.Command{
 	Args: cobra.RangeArgs(1, 2),
 	PreRun: func(cmd *cobra.Command, args []string) {
 		if len(args) > 1 && len(*flgs.namePersistentFlag) > 0 {
-			fmt.Println("please provide either args[1] or --name not both")
-			os.Exit(1)
+			utils.Terminate("please provide either args[1] or --name not both")
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
@@ -64,32 +63,44 @@ var createCmd = &cobra.Command{
 		// Find a way to start given containerImage (args[0]) as SystemD process.
 		// Make `svcConfig` stateful
 
+		// Create -> Check if the instance already exist
+		// If not then Calls NewSystem() and create one follows by CreateService
+
 		// *****Learning here*****
-		svcConfig := &service.Config{
-			Name:        instanceName,
-			DisplayName: instanceName,
-			Description: fmt.Sprintf("Runs %v as %v", instanceName, imageName),
-			Executable:  "/usr/bin/docker",
-			Arguments:   []string{"run", imageName},
+		if system.IsServiceExist(instanceName) {
+			utils.Terminate(fmt.Sprintf("systemd service already exist with %s", instanceName))
+		}
+
+		sysConfig := system.NewSystem(
+			system.WithName(instanceName),
+			system.WithDisplayName(instanceName),
+			system.WithDescription(fmt.Sprintf("Runs %v as %v", instanceName, imageName)),
+			system.WithExecutable(""),
+			system.WithArguments([]string{}),
 			// EnvVars:
-		}
+		)
 
-		prg := &createProgram{}
-		s, err := service.New(prg, svcConfig)
+		svcConfig, err := system.CreateService(sysConfig)
 		if err != nil {
-			log.Fatal(err)
+			utils.Terminate(err.Error())
 		}
 
-		logger, err = s.Logger(nil)
-		if err != nil {
-			log.Fatal(err)
-		}
+		// prg := &createProgram{}
+		// s, err := service.New(prg, svcConfig)
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
 
-		// err = s.Run()
+		// logger, err = s.Logger(nil)
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
 
-		if err = s.Install(); err != nil {
-			logger.Error(err)
-		}
+		// // err = s.Run()
+
+		// if err = s.Install(); err != nil {
+		// 	logger.Error(err)
+		// }
 
 		// Below will be used within `start` after making `svcConfig` stateful
 		// if err = s.Start(); err != nil {

@@ -9,9 +9,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Create -> Check if the instance already exist
-// If not then Calls NewSystem() and create one follows by CreateService
-
 // Create a new service.Config{} and save as file
 func CreateService(sys *System) (*service.Config, error) {
 	byteYaml, err := yaml.Marshal(sys)
@@ -19,11 +16,17 @@ func CreateService(sys *System) (*service.Config, error) {
 		return nil, err
 	}
 
-	if err = os.WriteFile(
-		path.Join(utils.CONFIG_DIR_PATH, sys.Name+".yml"),
-		byteYaml,
-		0644,
-	); err != nil {
+	if err := os.MkdirAll(utils.MANIFEST_DIR_PATH, utils.MANIFEST_DIR_PERM); err != nil {
+		return nil, err
+	}
+
+	filepath := path.Join(utils.MANIFEST_DIR_PATH, sys.Name+utils.YAML_EXT)
+	file, err := os.Create(filepath)
+	if err != nil {
+		return nil, err
+	}
+
+	if _, err = file.Write(byteYaml); err != nil {
 		return nil, err
 	}
 
@@ -34,4 +37,19 @@ func CreateService(sys *System) (*service.Config, error) {
 		Executable:  sys.Executable,
 		Arguments:   sys.Arguments,
 	}, nil
+}
+
+func IsServiceExist(instanceName string) bool {
+	contents, err := os.ReadDir(utils.MANIFEST_DIR_PATH)
+	if err != nil {
+		return false
+	}
+
+	for _, content := range contents {
+		if content.Name() == instanceName+utils.YAML_EXT {
+			return true
+		}
+	}
+
+	return false
 }
