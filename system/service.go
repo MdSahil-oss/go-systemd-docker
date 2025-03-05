@@ -1,6 +1,7 @@
 package system
 
 import (
+	"fmt"
 	"go-systemd-docker/utils"
 	"os"
 	"path"
@@ -39,6 +40,33 @@ func CreateService(sys *System) (*service.Config, error) {
 	}, nil
 }
 
+// GetService return saved service.Config{} as file.
+func GetService(instanceName string) (*service.Config, error) {
+
+	if !IsServiceExist(instanceName) {
+		return nil, fmt.Errorf("service doesn't exist")
+	}
+
+	byteCode, err := os.ReadFile(path.Join(utils.MANIFEST_DIR_PATH, instanceName+utils.YAML_EXT))
+	if err != nil {
+		return nil, err
+	}
+
+	sys := System{}
+	if err = yaml.Unmarshal(byteCode, &sys); err != nil {
+		return nil, err
+	}
+
+	return &service.Config{
+		Name:        sys.Name,
+		DisplayName: sys.DisplayName,
+		Description: sys.Description,
+		Executable:  sys.Executable,
+		Arguments:   sys.Arguments,
+	}, nil
+}
+
+// IsServiceExist checks if service exist.
 func IsServiceExist(instanceName string) bool {
 	contents, err := os.ReadDir(utils.MANIFEST_DIR_PATH)
 	if err != nil {

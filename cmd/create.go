@@ -10,28 +10,6 @@ import (
 	"go.rtnl.ai/x/randstr"
 )
 
-var logger service.Logger
-
-type createProgram struct{}
-
-func (p *createProgram) Start(s service.Service) error {
-	// Start should not block. Do the actual work async.
-	// go p.run()
-	fmt.Println("Initiated by start function")
-	return nil
-}
-
-func (p *createProgram) run() {
-	fmt.Println("this is running inside run function initiated by start function")
-	// Do work here
-}
-
-func (p *createProgram) Stop(s service.Service) error {
-	// Stop should not block. Return with a few seconds.
-	fmt.Println("Stopped running")
-	return nil
-}
-
 var createCmd = &cobra.Command{
 	Use:     "create [flags]",
 	Aliases: []string{"add"},
@@ -45,7 +23,6 @@ var createCmd = &cobra.Command{
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("sysd create")
 		// args[0] -> container-image
 		imageName := args[0]
 
@@ -85,27 +62,24 @@ var createCmd = &cobra.Command{
 			utils.Terminate(err.Error())
 		}
 
-		// prg := &createProgram{}
-		// s, err := service.New(prg, svcConfig)
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
+		prg := &createProgram{}
+		s, err := service.New(prg, svcConfig)
+		if err != nil {
+			// log.Fatal(err)
+			utils.Terminate(err.Error())
+		}
 
-		// logger, err = s.Logger(nil)
-		// if err != nil {
-		// 	log.Fatal(err)
-		// }
+		logger, err = s.Logger(nil)
+		if err != nil {
+			// log.Fatal(err)
+			utils.Terminate(err.Error())
+		}
 
-		// // err = s.Run()
+		// err = s.Run()
 
-		// if err = s.Install(); err != nil {
-		// 	logger.Error(err)
-		// }
-
-		// Below will be used within `start` after making `svcConfig` stateful
-		// if err = s.Start(); err != nil {
-		// 	logger.Error(err)
-		// }
-
+		if err = s.Install(); err != nil {
+			logger.Error(err)
+			utils.Terminate(err.Error())
+		}
 	},
 }

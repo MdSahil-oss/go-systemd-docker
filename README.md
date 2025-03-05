@@ -9,13 +9,13 @@ This project creates a golang based CLI that manages docker containers as system
 
 ## TODO
 
-- Find a way to start given containerImage (args[0]) as SystemD process.
-- Make `svcConfig` stateful so that processes become managable.
+- `Done`: Find a way to start given containerImage (args[0]) as SystemD process.
+- `Done`: Make `svcConfig` stateful so that processes become managable.
+- `Done`: Update `start` to make it able to start processes.
+- Update `stop` to make it able to stop processes.
 - Update `rm` to make it able to actually remove processes
 - Update `list` make it able to list processes.
 - Update `ps` to make it able to list running process.
-- Update `start` to make it able to start processes.
-- Update `stop` to make it able to stop processes.
 - Update `run` to make it able to install & start processes.
 - Update `create` to check if docker available and the path of it.
 - Update other commands so on.
