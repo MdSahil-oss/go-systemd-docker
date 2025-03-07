@@ -25,6 +25,7 @@ func GetDockerExecutablePath() string {
 }
 
 func GetHomeDir() string {
+
 	str, err := os.UserHomeDir()
 	if err != nil {
 		return "~/"
@@ -35,6 +36,6 @@ func GetHomeDir() string {
 
 // Terminate prints given string and exit with 1
 func Terminate(str string) {
-	fmt.Println(str)
+	fmt.Println("err:", str)
 	os.Exit(1)
 }

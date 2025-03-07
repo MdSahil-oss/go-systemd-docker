@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"go-systemd-docker/system"
 
 	"github.com/kardianos/service"
 )
@@ -26,4 +27,18 @@ func (p *createProgram) Stop(s service.Service) error {
 	// Stop should not block. Return with a few seconds.
 	fmt.Println("Stopped running")
 	return nil
+}
+
+func GetSystemDProcess(instanceName string) (service.Service, error) {
+	var s service.Service
+	svcConfig, err := system.GetService(instanceName)
+	if err != nil {
+		return s, err
+	}
+
+	prg := &createProgram{}
+	s, err = service.New(prg, svcConfig)
+
+	return s, err
+
 }

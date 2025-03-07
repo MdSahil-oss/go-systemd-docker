@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"go-systemd-docker/system"
 	"go-systemd-docker/utils"
 
-	"github.com/kardianos/service"
 	"github.com/spf13/cobra"
 )
 
@@ -29,25 +27,18 @@ var startCmd = &cobra.Command{
 			instanceName = args[0]
 		}
 
-		svcConfig, err := system.GetService(instanceName)
+		svc, err := GetSystemDProcess(instanceName)
 		if err != nil {
 			utils.Terminate(err.Error())
 		}
 
-		prg := &createProgram{}
-		s, err := service.New(prg, svcConfig)
-		if err != nil {
-			utils.Terminate(err.Error())
-			// log.Fatal(err)
-		}
-
-		logger, err = s.Logger(nil)
+		logger, err = svc.Logger(nil)
 		if err != nil {
 			utils.Terminate(err.Error())
 			// log.Fatal(err)
 		}
 
-		if err := s.Start(); err != nil {
+		if err := svc.Start(); err != nil {
 			logger.Error(err)
 			utils.Terminate(err.Error())
 		}

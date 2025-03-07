@@ -52,7 +52,7 @@ var createCmd = &cobra.Command{
 			system.WithName(instanceName),
 			system.WithDisplayName(instanceName),
 			system.WithDescription(fmt.Sprintf("Runs %v as %v", instanceName, imageName)),
-			system.WithExecutable(""),
+			system.WithExecutable(utils.GetDockerExecutablePath()),
 			system.WithArguments([]string{}),
 			// EnvVars:
 		)

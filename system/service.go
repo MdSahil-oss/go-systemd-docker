@@ -66,18 +66,22 @@ func GetService(instanceName string) (*service.Config, error) {
 	}, nil
 }
 
+// DeleteService deletes the saved service.Config{} as file.
+func DeleteService(instanceName string) error {
+	var err error
+	if IsServiceExist(instanceName) {
+		err = os.Remove(path.Join(utils.MANIFEST_DIR_PATH, instanceName+utils.YAML_EXT))
+	} else {
+		err = fmt.Errorf("manifest file not found")
+	}
+	return err
+}
+
 // IsServiceExist checks if service exist.
 func IsServiceExist(instanceName string) bool {
-	contents, err := os.ReadDir(utils.MANIFEST_DIR_PATH)
-	if err != nil {
+	if _, err := os.Stat(path.Join(utils.MANIFEST_DIR_PATH, instanceName+utils.YAML_EXT)); err != nil {
 		return false
 	}
 
-	for _, content := range contents {
-		if content.Name() == instanceName+utils.YAML_EXT {
-			return true
-		}
-	}
-
-	return false
+	return true
 }
