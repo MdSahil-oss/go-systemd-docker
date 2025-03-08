@@ -12,6 +12,8 @@ const (
 	MANIFEST_DIR_PERM              = 0775
 	DEFAULT_DOCKER_EXECUTABLE_PATH = "/usr/bin/docker"
 	YAML_EXT                       = ".yaml"
+	INDEX_FILE_NAME_WITHOUT_EXT    = "index"
+	INDEX_FILE_NAME_WITH_EXT       = INDEX_FILE_NAME_WITHOUT_EXT + YAML_EXT
 )
 
 var (
