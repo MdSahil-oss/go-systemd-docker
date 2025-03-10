@@ -1,39 +1,39 @@
 package system
 
 type index struct {
-	name     string         `yaml:"name"`
-	services []indexService `yaml:"services"`
+	Name     string         `yaml:"name"`
+	Services []indexService `yaml:"services"`
 }
 
 type indexType func(*index)
 
 func withIndexName(name string) indexType {
 	return func(i *index) {
-		i.name = name
+		i.Name = name
 	}
 }
 
 func withIndexServices(services []indexService) indexType {
 	return func(i *index) {
-		i.services = services
+		i.Services = services
 	}
 }
 
 type indexService struct {
-	name string `yaml:"name"`
-	path string `yaml:"path"`
+	Name string `yaml:"name"`
+	Path string `yaml:"path"`
 }
 
 type indexServiceType func(*indexService)
 
 func withIndexServiceName(name string) indexServiceType {
 	return func(is *indexService) {
-		is.name = name
+		is.Name = name
 	}
 }
 
 func withIndexServicePath(path string) indexServiceType {
 	return func(is *indexService) {
-		is.path = path
+		is.Path = path
 	}
 }

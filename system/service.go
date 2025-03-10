@@ -10,6 +10,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+var indexpath string = path.Join(utils.CONFIG_DIR_PATH, utils.INDEX_FILE_NAME_WITH_EXT)
+
 // Create a new service.Config{} and save as file
 func CreateService(sys *System) (*service.Config, error) {
 	byteYaml, err := yaml.Marshal(sys)
@@ -32,44 +34,45 @@ func CreateService(sys *System) (*service.Config, error) {
 	}
 
 	var byteIndex []byte
-	indexpath := path.Join(utils.CONFIG_DIR_PATH, utils.INDEX_FILE_NAME_WITH_EXT)
 
 	// create index.yaml if not present with default configuration.
 	if _, err := os.Stat(indexpath); os.IsNotExist(err) {
-		byteIndex, err = yaml.Marshal(index{
-			name:     utils.INDEX_FILE_NAME_WITHOUT_EXT,
-			services: []indexService{},
-		})
-		if err != nil {
+		if byteIndex, err = yaml.Marshal(&index{
+			Name:     utils.INDEX_FILE_NAME_WITHOUT_EXT,
+			Services: []indexService{},
+		}); err != nil {
 			return nil, err
 		}
 
-		fmt.Println("index contents:", string(byteIndex))
-		if err = os.WriteFile(indexpath, byteIndex, utils.MANIFEST_FILE_PERM); err != nil {
+		// if err = os.WriteFile(indexpath, byteIndex, utils.MANIFEST_FILE_PERM); err != nil {
+		// 	return nil, err
+		// }
+	}
+
+	if byteIndex == nil {
+		if byteIndex, err = os.ReadFile(indexpath); err != nil {
 			return nil, err
 		}
 	}
 
-	// if byteIndex == nil {
-	// 	if byteIndex, err = os.ReadFile(indexpath); err != nil {
-	// 		return nil, err
-	// 	}
-	// }
+	index := index{}
+	if err = yaml.Unmarshal(byteIndex, &index); err != nil {
+		return nil, err
+	}
 
-	// index := index{}
-	// if err = yaml.Unmarshal(byteIndex, &index); err != nil {
-	// 	return nil, err
-	// }
+	// append in index.services the newly create services.
+	index.Services = append(index.Services, indexService{
+		Name: sys.Name,
+		Path: filepath,
+	})
 
-	// // append in index.services the newly create services.
-	// index.services = append(index.services, indexService{
-	// 	name: sys.Name,
-	// 	path: filepath,
-	// })
+	if byteIndex, err = yaml.Marshal(&index); err != nil {
+		return nil, err
+	}
 
-	// if err = os.WriteFile(indexpath, byteIndex, utils.MANIFEST_FILE_PERM); err != nil {
-	// 	return nil, err
-	// }
+	if err = os.WriteFile(indexpath, byteIndex, utils.MANIFEST_FILE_PERM); err != nil {
+		return nil, err
+	}
 
 	return &service.Config{
 		Name:        sys.Name,
@@ -83,12 +86,48 @@ func CreateService(sys *System) (*service.Config, error) {
 // DeleteService deletes the saved service.Config{} as file.
 func DeleteService(instanceName string) error {
 	var err error
-	if IsServiceExist(instanceName) {
-		err = os.Remove(path.Join(utils.MANIFEST_DIR_PATH, instanceName+utils.YAML_EXT))
-	} else {
-		err = fmt.Errorf("manifest file not found")
+	var errs []error
+
+	// removes manifest file.
+	if !IsServiceExist(instanceName) {
+		errs = append(errs, fmt.Errorf("manifest file not found"))
 	}
-	return err
+	err = os.Remove(path.Join(utils.MANIFEST_DIR_PATH, instanceName+utils.YAML_EXT))
+
+	if _, err := os.Stat(indexpath); os.IsNotExist(err) {
+		errs = append(errs, fmt.Errorf("index file not found"))
+		return fmt.Errorf("%v", errs)
+	}
+
+	byteIndex, err := os.ReadFile(indexpath)
+	if err != nil {
+		errs = append(errs, err)
+		return fmt.Errorf("%v", errs)
+	}
+
+	index := index{}
+	if err = yaml.Unmarshal(byteIndex, &index); err != nil {
+		errs = append(errs, err)
+		return fmt.Errorf("%v", errs)
+	}
+
+	for i, element := range index.Services {
+		if element.Name == instanceName {
+			index.Services = append(index.Services[:i], index.Services[i+1:]...)
+		}
+	}
+
+	if byteIndex, err = yaml.Marshal(&index); err != nil {
+		errs = append(errs, err)
+		return fmt.Errorf("%v", errs)
+	}
+
+	if err = os.WriteFile(indexpath, byteIndex, utils.MANIFEST_FILE_PERM); err != nil {
+		errs = append(errs, err)
+		return fmt.Errorf("%v", errs)
+	}
+
+	return nil
 }
 
 // GetService return saved service.Config{} as file.
