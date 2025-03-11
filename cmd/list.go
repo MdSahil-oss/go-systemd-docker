@@ -1,8 +1,12 @@
 package cmd
 
 import (
+	"go-systemd-docker/system"
 	"go-systemd-docker/utils"
+	"os"
 
+	"github.com/kataras/tableprinter"
+	"github.com/kataras/tablewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -19,11 +23,31 @@ var listCmd = &cobra.Command{
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		// var instanceName string = *flgs.namePersistentFlag
-		// if len(args) > 0 {
-		// 	instanceName = args[0]
-		// }
+		var instanceName string = *flgs.namePersistentFlag
+		if len(args) > 0 {
+			instanceName = args[0]
+		}
 
+		svcs, err := system.ListServices()
+		if err != nil {
+			utils.Terminate(err.Error())
+		}
+
+		printer := tableprinter.New(os.Stdout)
+		printer.HeaderLine = false
+		printer.HeaderFgColor = tablewriter.FgGreenColor
+
+		if len(instanceName) > 0 {
+			for i, svc := range svcs {
+				if svc.Name == instanceName {
+					printer.Print(
+						svcs[i],
+					)
+				}
+			}
+		} else {
+			printer.Print(svcs)
+		}
 	},
 }
 

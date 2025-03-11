@@ -20,8 +20,8 @@ func withIndexServices(services []indexService) indexType {
 }
 
 type indexService struct {
-	Name string `yaml:"name"`
-	Path string `yaml:"path"`
+	Name string `yaml:"name" header:"Name"`
+	Path string `yaml:"path" header:"Path"`
 }
 
 type indexServiceType func(*indexService)

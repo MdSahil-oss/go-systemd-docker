@@ -12,7 +12,7 @@ import (
 
 var indexpath string = path.Join(utils.CONFIG_DIR_PATH, utils.INDEX_FILE_NAME_WITH_EXT)
 
-// Create a new service.Config{} and save as file
+// CreateService create a new service config and save it as a file & also update index.
 func CreateService(sys *System) (*service.Config, error) {
 	byteYaml, err := yaml.Marshal(sys)
 	if err != nil {
@@ -83,7 +83,7 @@ func CreateService(sys *System) (*service.Config, error) {
 	}, nil
 }
 
-// DeleteService deletes the saved service.Config{} as file.
+// DeleteService deletes the service config created as a file & also update index.
 func DeleteService(instanceName string) error {
 	var err error
 	var errs []error
@@ -130,7 +130,7 @@ func DeleteService(instanceName string) error {
 	return nil
 }
 
-// GetService return saved service.Config{} as file.
+// GetService return saved service Config as file.
 func GetService(instanceName string) (*service.Config, error) {
 
 	if !IsServiceExist(instanceName) {
@@ -157,23 +157,26 @@ func GetService(instanceName string) (*service.Config, error) {
 }
 
 // ListServices return saved service.Config{} as file.
-func ListServices() ([]string, error) {
+func ListServices() ([]indexService, error) {
 
-	// if !IsServiceExist(instanceName) {
-	// 	return nil, fmt.Errorf("service doesn't exist")
-	// }
+	if _, err := os.Stat(indexpath); err != nil {
+		if os.IsNotExist(err) {
+			return nil, fmt.Errorf("No service exist")
+		}
+		return nil, err
+	}
 
-	// byteCode, err := os.ReadFile(path.Join(utils.MANIFEST_DIR_PATH, instanceName+utils.YAML_EXT))
-	// if err != nil {
-	// 	return nil, err
-	// }
+	byteCode, err := os.ReadFile(indexpath)
+	if err != nil {
+		return nil, err
+	}
 
-	// sys := System{}
-	// if err = yaml.Unmarshal(byteCode, &sys); err != nil {
-	// 	return nil, err
-	// }
+	index := index{}
+	if err = yaml.Unmarshal(byteCode, &index); err != nil {
+		return nil, err
+	}
 
-	return []string{}, nil
+	return index.Services, nil
 }
 
 // IsServiceExist checks if service exist.
