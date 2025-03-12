@@ -53,8 +53,11 @@ var createCmd = &cobra.Command{
 			system.WithDisplayName(instanceName),
 			system.WithDescription(fmt.Sprintf("Runs %v as %v", instanceName, imageName)),
 			system.WithExecutable(utils.GetDockerExecutablePath()),
-			system.WithArguments([]string{}),
-			// EnvVars:
+			system.WithArguments([]string{
+				"run",
+				imageName,
+			}),
+			// Add other docker supported ...args
 		)
 
 		svcConfig, err := system.CreateService(sysConfig)

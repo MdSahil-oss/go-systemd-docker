@@ -13,12 +13,14 @@ const (
 	DEFAULT_DOCKER_EXECUTABLE_PATH = "/usr/bin/docker"
 	YAML_EXT                       = ".yaml"
 	INDEX_FILE_NAME_WITHOUT_EXT    = "index"
+	MANIFEST_FILE_NAME             = "manifests"
 	INDEX_FILE_NAME_WITH_EXT       = INDEX_FILE_NAME_WITHOUT_EXT + YAML_EXT
 )
 
 var (
 	CONFIG_DIR_PATH   = path.Join(GetHomeDir(), CONFIG_DIR)
-	MANIFEST_DIR_PATH = path.Join(CONFIG_DIR_PATH, "manifests")
+	MANIFEST_DIR_PATH = path.Join(CONFIG_DIR_PATH, MANIFEST_FILE_NAME)
+	INDEX_FILE_PATH   = path.Join(CONFIG_DIR_PATH, INDEX_FILE_NAME_WITH_EXT)
 )
 
 // GetDockerExecutablePath returns executable docker path

@@ -54,6 +54,7 @@ func Execute() {
 		stopCmd,
 		listCmd,
 		processCmd,
+		showCmd,
 	)
 
 	if err := rootCmd.Execute(); err != nil {

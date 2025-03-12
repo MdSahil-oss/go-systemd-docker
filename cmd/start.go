@@ -42,5 +42,9 @@ var startCmd = &cobra.Command{
 			logger.Error(err)
 			utils.Terminate(err.Error())
 		}
+
+		// if err = svc.Run(); err != nil {
+		// 	utils.Terminate(err.Error())
+		// }
 	},
 }
