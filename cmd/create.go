@@ -6,6 +6,7 @@ import (
 	"go-systemd-docker/utils"
 
 	"github.com/kardianos/service"
+	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"go.rtnl.ai/x/randstr"
 )
@@ -29,19 +30,23 @@ var createCmd = &cobra.Command{
 		var instanceName string = *flgs.namePersistentFlag
 		if len(args) > 1 {
 			instanceName = args[1]
+		} else if !*flgs.notInteractivePersistentFlag {
+			prompt := promptui.Prompt{
+				Label:     fmt.Sprintf("Are you sure you want to run %s image as systemd process", imageName),
+				IsConfirm: true, // Ensure it's a confirmation prompt
+			}
+
+			_, err := prompt.Run()
+			if err != nil {
+				utils.Terminate("Confirmation cancelled.")
+				return
+			}
 		}
 
 		if len(instanceName) == 0 {
 			// Assign a random name to `instanceName`.
 			instanceName = randstr.Word(8)
 		}
-
-		// Do followings:
-		// Find a way to start given containerImage (args[0]) as SystemD process.
-		// Make `svcConfig` stateful
-
-		// Create -> Check if the instance already exist
-		// If not then Calls NewSystem() and create one follows by CreateService
 
 		// *****Learning here*****
 		if system.IsServiceExist(instanceName) {

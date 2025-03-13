@@ -155,6 +155,23 @@ func GetService(instanceName string) (*service.Config, error) {
 }
 
 // ListServices return saved service.Config{} as file.
+func ListService(instanceName string) (IndexService, error) {
+
+	svcs, err := ListServices()
+	if err != nil {
+		return IndexService{}, err
+	}
+
+	for _, svc := range svcs {
+		if svc.Name == instanceName {
+			return svc, nil
+		}
+	}
+
+	return IndexService{}, nil
+}
+
+// ListServices return saved service.Config{} as file.
 func ListServices() ([]IndexService, error) {
 
 	if _, err := os.Stat(utils.INDEX_FILE_PATH); err != nil {

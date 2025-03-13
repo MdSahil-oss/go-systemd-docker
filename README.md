@@ -109,6 +109,20 @@ List registered systemd process (container-image).
 
 - arg[0] (optional) : Name of a particular systemd registered process to list.
 
+### cmd: show
+
+Show systemd process configuration for the instance name(container-image).
+
+**flags:**
+
+- --name | -n : Name of a particular systemd registered process or put index to see index configuration.
+
+**Just `sysd show` will show index config only**
+
+**args:**
+
+- arg[0] (optional) : Name of a particular systemd registered process or put index to see index configuration.
+
 ### cmd: process
 
 List running systemd process instances.

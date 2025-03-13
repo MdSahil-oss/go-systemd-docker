@@ -40,5 +40,28 @@ func GetSystemDProcess(instanceName string) (service.Service, error) {
 	s, err = service.New(prg, svcConfig)
 
 	return s, err
+}
 
+func GetSystemDProcesses() ([]service.Service, error) {
+	var svcs []service.Service
+
+	ss, err := system.ListServices()
+	if err != nil {
+		return nil, err
+	}
+
+	var errs []error = nil
+	for _, s := range ss {
+		svc, err := GetSystemDProcess(s.Name)
+		if err != nil {
+			errs = append(errs, err)
+		}
+
+		svcs = append(svcs, svc)
+	}
+
+	if len(errs) > 0 {
+		return svcs, fmt.Errorf("%v", errs)
+	}
+	return svcs, nil
 }

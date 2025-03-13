@@ -15,6 +15,8 @@ const (
 	INDEX_FILE_NAME_WITHOUT_EXT    = "index"
 	MANIFEST_FILE_NAME             = "manifests"
 	INDEX_FILE_NAME_WITH_EXT       = INDEX_FILE_NAME_WITHOUT_EXT + YAML_EXT
+	PROCESS_STATUS_RUNNING         = "Active"
+	PROCESS_STATUS_STOPPED         = "Inactive"
 )
 
 var (

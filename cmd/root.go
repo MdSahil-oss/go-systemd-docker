@@ -17,9 +17,10 @@ var rootCmd = &cobra.Command{
 }
 
 type Flags struct {
-	namePersistentFlag *string
-	forceFlag          *bool
-	allFlag            *bool
+	namePersistentFlag           *string
+	notInteractivePersistentFlag *bool
+	forceFlag                    *bool
+	allFlag                      *bool
 }
 
 var flgs = Flags{}
@@ -28,6 +29,7 @@ var flgs = Flags{}
 func init() {
 	// persistent Flags for all the sub-cmds.
 	flgs.namePersistentFlag = rootCmd.PersistentFlags().StringP("name", "n", "", "provides name to instance")
+	flgs.notInteractivePersistentFlag = rootCmd.PersistentFlags().BoolP("not-interactive", "t", false, "enables non-interactive mode")
 
 	// flags for delete (or rm) sub-cmd
 	flgs.forceFlag = deleteCmd.Flags().BoolP("force", "f", false, "force delete packages")
