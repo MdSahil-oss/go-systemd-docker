@@ -6,7 +6,6 @@ import (
 	"go-systemd-docker/utils"
 
 	"github.com/kardianos/service"
-	"github.com/manifoldco/promptui"
 	"github.com/spf13/cobra"
 	"go.rtnl.ai/x/randstr"
 )
@@ -24,31 +23,19 @@ var createCmd = &cobra.Command{
 		}
 	},
 	Run: func(cmd *cobra.Command, args []string) {
-		// args[0] -> container-image
 		imageName := args[0]
 
 		var instanceName string = *flgs.namePersistentFlag
 		if len(args) > 1 {
 			instanceName = args[1]
-		} else if !*flgs.notInteractivePersistentFlag {
-			prompt := promptui.Prompt{
-				Label:     fmt.Sprintf("Are you sure you want to run %s image as systemd process", imageName),
-				IsConfirm: true, // Ensure it's a confirmation prompt
-			}
-
-			_, err := prompt.Run()
-			if err != nil {
-				utils.Terminate("Confirmation cancelled.")
-				return
-			}
 		}
 
 		if len(instanceName) == 0 {
 			// Assign a random name to `instanceName`.
 			instanceName = randstr.Word(8)
+			AreYouAure(fmt.Sprintf(`Are you sure you want to run '%s' image as systemd process A random name '%s' will be assigned to systemd instance.`, imageName, instanceName))
 		}
 
-		// *****Learning here*****
 		if system.IsServiceExist(instanceName) {
 			utils.Terminate(fmt.Sprintf("systemd service already exist with %s", instanceName))
 		}

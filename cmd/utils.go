@@ -3,8 +3,10 @@ package cmd
 import (
 	"fmt"
 	"go-systemd-docker/system"
+	"go-systemd-docker/utils"
 
 	"github.com/kardianos/service"
+	"github.com/manifoldco/promptui"
 )
 
 var logger service.Logger
@@ -27,6 +29,20 @@ func (p *createProgram) Stop(s service.Service) error {
 	// Stop should not block. Return with a few seconds.
 	fmt.Println("Stopped running")
 	return nil
+}
+
+func AreYouAure(str string) {
+	if !*flgs.notInteractivePersistentFlag {
+		prompt := promptui.Prompt{
+			Label:     str,
+			IsConfirm: true, // Ensure it's a confirmation prompt
+		}
+
+		_, err := prompt.Run()
+		if err != nil {
+			utils.Terminate("Confirmation cancelled.")
+		}
+	}
 }
 
 func GetSystemDProcess(instanceName string) (service.Service, error) {

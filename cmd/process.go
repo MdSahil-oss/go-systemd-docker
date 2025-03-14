@@ -8,6 +8,7 @@ import (
 
 	"github.com/kardianos/service"
 	"github.com/kataras/tableprinter"
+	"github.com/kataras/tablewriter"
 	"github.com/spf13/cobra"
 )
 
@@ -23,15 +24,17 @@ var processCmd = &cobra.Command{
 			utils.Terminate("please provide either args[0] or --name not both")
 		}
 	},
-	// 	--all | -a : list all stopped and running ones.
-	// --name | -n : Name of a particular systemd instance to list
 	Run: func(cmd *cobra.Command, args []string) {
 		var instanceName string = *flgs.namePersistentFlag
 		if len(args) > 0 {
 			instanceName = args[0]
 		}
 
-		tp := tableprinter.New(os.Stdout)
+		// TablePrinter configuration
+		printer := tableprinter.New(os.Stdout)
+		printer.HeaderLine = false
+		printer.HeaderFgColor = tablewriter.FgGreenColor
+
 		if len(instanceName) > 0 {
 			s, err := system.ListService(instanceName)
 			if err != nil {
@@ -50,8 +53,7 @@ var processCmd = &cobra.Command{
 
 			if status == service.StatusRunning {
 				s.Status = utils.PROCESS_STATUS_RUNNING
-				tp.Print(s.Name)
-				tp.Print(s.Status)
+				printer.Print(s)
 			}
 
 		} else {
@@ -60,6 +62,7 @@ var processCmd = &cobra.Command{
 				utils.Terminate(err.Error())
 			}
 
+			var runningSS []system.IndexService
 			var errs []error = nil
 			for _, s := range ss {
 				svc, err := GetSystemDProcess(s.Name)
@@ -74,17 +77,13 @@ var processCmd = &cobra.Command{
 
 				if status == service.StatusRunning {
 					s.Status = utils.PROCESS_STATUS_RUNNING
-					tp.Print(s.Name)
-					tp.Print(s.Status)
+					runningSS = append(runningSS, s)
+				} else if *flgs.allFlag && status == service.StatusStopped {
+					s.Status = utils.PROCESS_STATUS_STOPPED
+					runningSS = append(runningSS, s)
 				}
-
-				// if status == service.StatusStopped {
-				// 	// fmt.Println(fmt.Sprintf("Service %s is stopped", instanceName))
-				// 	s.Status = utils.PROCESS_STATUS_STOPPED
-				// 	tp.Print(s.Name)
-				// 	tp.Print(s.Status)
-				// }
 			}
+			printer.Print(runningSS)
 
 			if len(errs) > 0 {
 				utils.Terminate(fmt.Sprintf("%v", errs))

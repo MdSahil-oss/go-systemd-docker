@@ -30,12 +30,12 @@ func init() {
 	// persistent Flags for all the sub-cmds.
 	flgs.namePersistentFlag = rootCmd.PersistentFlags().StringP("name", "n", "", "provides name to instance")
 	flgs.notInteractivePersistentFlag = rootCmd.PersistentFlags().BoolP("not-interactive", "t", false, "enables non-interactive mode")
+	flgs.allFlag = rootCmd.PersistentFlags().BoolP("all", "a", false, "select all packages")
 
 	// flags for delete (or rm) sub-cmd
 	flgs.forceFlag = deleteCmd.Flags().BoolP("force", "f", false, "force delete packages")
 
 	// flags for process (or ps) sub-cmd
-	flgs.allFlag = processCmd.Flags().BoolP("all", "a", false, "select all packages")
 }
 
 func Execute() {

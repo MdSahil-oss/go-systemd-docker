@@ -17,11 +17,13 @@ This project creates a golang based CLI that manages docker containers as system
 - `Done`: `list` make it able to list processes.
 - `Done`: Started systemd processes only goes in activating state (never gets green)
 - `Done`: Create `show` to show service name.
-- Update `ps` to make it able to list running process.
+- `Done`: Updated `rm` to remove multiple instances.
+- `Done`: `ps` to make it able to list running process.
 - Update `run` to make it able to install & start processes.
 - Update `create` to check if docker available and the path of it.
 - Update other commands so on.
 - Update GetDockerExecutablePath to find `docker` executable path
+- Add support for other docker run flags and more.
 - Try to remove sudo prepending before `sysd`.
 
 ## Commands
@@ -54,11 +56,13 @@ Delete/deregisters a container-image Systemd process.
 **flags:**
 
 - --name | -n : Name of the deregistering container process.
+- --all | -A : Removes all the running instances.
 - --force | -f : Force stop/delete the running instance otherwise running instance cannot be deleted.
 
 **args:**
 
 - arg[0] (optional) : Name of the deregistering container process.
+- ...args (optional): giving more than one args will result in deletion of all the instances.
 
 ### cmd: run
 

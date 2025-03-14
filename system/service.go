@@ -154,7 +154,7 @@ func GetService(instanceName string) (*service.Config, error) {
 	}, nil
 }
 
-// ListServices return saved service.Config{} as file.
+// ListService return the service with given name created as systemd instance.
 func ListService(instanceName string) (IndexService, error) {
 
 	svcs, err := ListServices()
@@ -171,7 +171,7 @@ func ListService(instanceName string) (IndexService, error) {
 	return IndexService{}, nil
 }
 
-// ListServices return saved service.Config{} as file.
+// ListServices return a list of services created as systemd instance.
 func ListServices() ([]IndexService, error) {
 
 	if _, err := os.Stat(utils.INDEX_FILE_PATH); err != nil {
