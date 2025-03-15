@@ -19,12 +19,12 @@ This project creates a golang based CLI that manages docker containers as system
 - `Done`: Create `show` to show service name.
 - `Done`: Updated `rm` to remove multiple instances.
 - `Done`: `ps` to make it able to list running process.
-- Update `run` to make it able to install & start processes.
-- Update `create` to check if docker available and the path of it.
-- Update other commands so on.
-- Update GetDockerExecutablePath to find `docker` executable path
+- `Done`: Update `run` to make it able to install & start processes.
+- `Done`: Update GetDockerExecutablePath to find `docker` executable path
 - Add support for other docker run flags and more.
+- Currently CLI downloads and runs docker image but there is no way to prune the downloaded images using this CLI that this CLI Downloaded.
 - Try to remove sudo prepending before `sysd`.
+- Update other commands so on.
 
 ## Commands
 

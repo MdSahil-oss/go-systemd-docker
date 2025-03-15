@@ -3,7 +3,9 @@ package utils
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path"
+	"path/filepath"
 )
 
 const (
@@ -27,7 +29,18 @@ var (
 
 // GetDockerExecutablePath returns executable docker path
 func GetDockerExecutablePath() string {
-	return DEFAULT_DOCKER_EXECUTABLE_PATH
+	cmdPath, err := exec.LookPath("docker")
+	if err != nil {
+		Terminate(fmt.Sprintf("docker doesn't exist probabbly: %s:", err.Error()))
+		return DEFAULT_DOCKER_EXECUTABLE_PATH
+	}
+
+	if cmdPath, err = filepath.Abs(cmdPath); err != nil {
+		Terminate(err.Error())
+		return DEFAULT_DOCKER_EXECUTABLE_PATH
+	}
+
+	return cmdPath
 }
 
 func GetHomeDir() string {
