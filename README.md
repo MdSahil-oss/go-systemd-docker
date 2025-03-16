@@ -23,6 +23,10 @@ This project creates a golang based CLI that manages docker containers as system
 - `Done`: Update GetDockerExecutablePath to find `docker` executable path
 - Add support for other docker run flags and more.
 - Currently CLI downloads and runs docker image but there is no way to prune the downloaded images using this CLI that this CLI Downloaded.
+  - Add a sub-cmd `docker` with its following sub-cmds `ls`, `ps`, `rm`, Where
+  - `ls` prints the docker images that this CLI has pulled in the system so far and present on the system.
+  - `ps` prints the images currently being used.
+  - `rm` remove an image or all the images (on `all` flag). If the image instance exist on the system then promts user for confirmation.
 - Try to remove sudo prepending before `sysd`.
 - Update other commands so on.
 
@@ -30,11 +34,11 @@ This project creates a golang based CLI that manages docker containers as system
 
 - `create`: Register container as Systemd process.
 - `delete`: Deregisters container from SystemD process.
-- `run`: Initiate running Registered SystemD container.
-- `start`: Continue running stopped one.
-- `stop`: Stop running SystemD container.
-- `ls`: List registered SystemD processes.
-- `ps`: returns a list of running SystemD processes.
+- `run`: Registers & Starts running container as SystemD process.
+- `start`: Start running the registered container as Systemd process.
+- `stop`: Stop running the registered container as Systemd process.
+- `ls`: List registered containers as Systemd processes.
+- `ps`: returns a list of running registered containers as Systemd processes.
 
 ### cmd: create
 
