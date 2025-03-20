@@ -26,6 +26,7 @@ This project creates a golang based CLI that manages docker containers as system
   - `ls` prints the docker images that this CLI has pulled in the system so far and present on the system.
   - `ps` prints the images currently being used.
   - `rm` remove an image or all the images (on `all` flag). If the image instance exist on the system then promts user for confirmation.
+- Add validation to check if there docker image exist.
 - Add support for other docker run flags and more to the `run` sub-cmd.
   - Add support for only relatable flags (Don't think all flags are needed).
   - Give user options to add docker run flags either imperatively or declaratively.

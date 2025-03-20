@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"go-systemd-docker/pkg/cmd/docker"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -39,13 +40,8 @@ func init() {
 }
 
 func Execute() {
-	// v.SetDefault("random", "It should not have been random")
-	// v := viper.GetViper()
-	// fmt.Println("random:", v.GetString("random"))
-
-	// name := rootCmd.PersistentFlags().StringP("name", "n", "", "used for providing name")
-	// v := viper.New()
-	// v.BindPFlag()
+	// Registers groups
+	rootCmd.AddGroup(docker.DockerGrp)
 
 	// registers cmds.
 	rootCmd.AddCommand(
@@ -57,6 +53,7 @@ func Execute() {
 		listCmd,
 		processCmd,
 		showCmd,
+		docker.DockerCmd,
 	)
 
 	if err := rootCmd.Execute(); err != nil {

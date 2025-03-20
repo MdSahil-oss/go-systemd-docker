@@ -52,7 +52,7 @@ var createCmd = &cobra.Command{
 			// Add other docker supported ...args
 		)
 
-		svcConfig, err := system.CreateService(sysConfig)
+		svcConfig, err := system.CreateService(sysConfig, imageName)
 		if err != nil {
 			utils.Terminate(err.Error())
 		}

@@ -11,7 +11,7 @@ import (
 )
 
 // CreateService create a new service config and save it as a file & also update index.
-func CreateService(sys *System) (*service.Config, error) {
+func CreateService(sys *System, imageName string) (*service.Config, error) {
 	byteYaml, err := yaml.Marshal(sys)
 	if err != nil {
 		return nil, err
@@ -35,16 +35,12 @@ func CreateService(sys *System) (*service.Config, error) {
 
 	// create index.yaml if not present with default configuration.
 	if _, err := os.Stat(utils.INDEX_FILE_PATH); os.IsNotExist(err) {
-		if byteIndex, err = yaml.Marshal(&Index{
-			Name:     utils.INDEX_FILE_NAME_WITHOUT_EXT,
-			Services: []IndexService{},
-		}); err != nil {
+		if byteIndex, err = yaml.Marshal(NewIndex(
+			withIndexName(utils.INDEX_FILE_NAME_WITHOUT_EXT),
+			withIndexServices([]IndexService{}),
+		)); err != nil {
 			return nil, err
 		}
-
-		// if err = os.WriteFile(indexpath, byteIndex, utils.MANIFEST_FILE_PERM); err != nil {
-		// 	return nil, err
-		// }
 	}
 
 	if byteIndex == nil {
@@ -59,10 +55,11 @@ func CreateService(sys *System) (*service.Config, error) {
 	}
 
 	// append in index.services the newly create services.
-	index.Services = append(index.Services, IndexService{
-		Name: sys.Name,
-		Path: filepath,
-	})
+	index.Services = append(index.Services, *NewIndexService(
+		withIndexServiceName(sys.Name),
+		withIndexServicePath(filepath),
+		withIndexServiceImage(imageName),
+	))
 
 	if byteIndex, err = yaml.Marshal(&index); err != nil {
 		return nil, err
