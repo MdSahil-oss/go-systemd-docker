@@ -2,7 +2,15 @@ package cmd
 
 import (
 	"fmt"
+	"go-systemd-docker/pkg/cmd/create"
+	"go-systemd-docker/pkg/cmd/delete"
 	"go-systemd-docker/pkg/cmd/docker"
+	"go-systemd-docker/pkg/cmd/list"
+	"go-systemd-docker/pkg/cmd/process"
+	"go-systemd-docker/pkg/cmd/run"
+	"go-systemd-docker/pkg/cmd/show"
+	"go-systemd-docker/pkg/cmd/start"
+	"go-systemd-docker/pkg/cmd/stop"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -17,26 +25,16 @@ var rootCmd = &cobra.Command{
 	Version: "1.0.0",
 }
 
-type Flags struct {
-	namePersistentFlag           *string
-	notInteractivePersistentFlag *bool
-	forceFlag                    *bool
-	allFlag                      *bool
+type FlagsType struct {
+	NotInteractivePersistentFlag *bool
 }
 
-var flgs = Flags{}
+var Flags = FlagsType{}
 
 // Using init() to register flags with sub-cmds
 func init() {
 	// persistent Flags for all the sub-cmds.
-	flgs.namePersistentFlag = rootCmd.PersistentFlags().StringP("name", "n", "", "provides name to instance")
-	flgs.notInteractivePersistentFlag = rootCmd.PersistentFlags().BoolP("not-interactive", "t", false, "enables non-interactive mode")
-	flgs.allFlag = rootCmd.PersistentFlags().BoolP("all", "a", false, "select all packages")
-
-	// flags for delete (or rm) sub-cmd
-	flgs.forceFlag = deleteCmd.Flags().BoolP("force", "f", false, "force delete packages")
-
-	// flags for process (or ps) sub-cmd
+	Flags.NotInteractivePersistentFlag = rootCmd.PersistentFlags().BoolP("not-interactive", "t", false, "enables non-interactive mode")
 }
 
 func Execute() {
@@ -45,15 +43,15 @@ func Execute() {
 
 	// registers cmds.
 	rootCmd.AddCommand(
-		createCmd,
-		deleteCmd,
-		runCmd,
-		startCmd,
-		stopCmd,
-		listCmd,
-		processCmd,
-		showCmd,
+		create.CreateCmd,
+		delete.DeleteCmd,
 		docker.DockerCmd,
+		list.ListCmd,
+		process.ProcessCmd,
+		run.RunCmd,
+		show.ShowCmd,
+		start.StartCmd,
+		stop.StopCmd,
 	)
 
 	if err := rootCmd.Execute(); err != nil {
