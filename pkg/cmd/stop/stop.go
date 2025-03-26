@@ -1,9 +1,8 @@
 package stop
 
 import (
+	"go-systemd-docker/pkg/system"
 	"go-systemd-docker/pkg/utils"
-
-	cmdUtils "go-systemd-docker/pkg/cmd/utils"
 
 	"github.com/spf13/cobra"
 )
@@ -37,7 +36,7 @@ func init() {
 				instanceName = args[0]
 			}
 
-			svc, err := cmdUtils.GetSystemDProcess(instanceName)
+			svc, err := system.GetSystemDProcess(instanceName)
 			if err != nil {
 				utils.Terminate(err.Error())
 			}

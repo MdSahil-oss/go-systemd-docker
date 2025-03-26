@@ -56,7 +56,7 @@ func init() {
 			}
 
 			for _, instanceName := range instanceNames {
-				svc, err := cmdUtils.GetSystemDProcess(instanceName)
+				svc, err := system.GetSystemDProcess(instanceName)
 				if err != nil {
 					utils.Terminate(err.Error())
 				}

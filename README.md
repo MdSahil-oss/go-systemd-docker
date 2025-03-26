@@ -35,10 +35,7 @@ This project creates a golang based CLI that manages docker containers as system
 
 ## Going on
 
-- Strategy to organize code in re-usage manner so it is cyclic error free
-  - Remove Global flag and add individual flags to cmds
-  - Use viper module to manage values.`
-- Viper pkg is not working for some reasons (Upper level module -> lower level module [See what's the problem at lower level module])
+
 
 ## Commands
 

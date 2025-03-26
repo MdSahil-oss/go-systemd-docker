@@ -77,7 +77,7 @@ func init() {
 				utils.Terminate(err.Error())
 			}
 
-			prg := &cmdUtils.CreateProgram{}
+			prg := &system.CreateProgram{}
 			s, err := service.New(prg, svcConfig)
 			if err != nil {
 				// log.Fatal(err)

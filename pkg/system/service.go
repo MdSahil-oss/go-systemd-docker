@@ -165,7 +165,46 @@ func ListService(instanceName string) (IndexService, error) {
 		}
 	}
 
-	return IndexService{}, nil
+	return IndexService{}, fmt.Errorf("no systemd service exist with %s name", instanceName)
+}
+
+// GetSystemDProcess returns the installed systemd config `instanceName` on the system.
+func GetSystemDProcess(instanceName string) (service.Service, error) {
+	var s service.Service
+	svcConfig, err := GetService(instanceName)
+	if err != nil {
+		return s, err
+	}
+
+	prg := &CreateProgram{}
+	s, err = service.New(prg, svcConfig)
+
+	return s, err
+}
+
+// GetSystemDProcesses returns a list of installed systemd configs on the system.
+func GetSystemDProcesses() ([]service.Service, error) {
+	var svcs []service.Service
+
+	ss, err := ListServices()
+	if err != nil {
+		return nil, err
+	}
+
+	var errs []error = nil
+	for _, s := range ss {
+		svc, err := GetSystemDProcess(s.Name)
+		if err != nil {
+			errs = append(errs, err)
+		}
+
+		svcs = append(svcs, svc)
+	}
+
+	if len(errs) > 0 {
+		return svcs, fmt.Errorf("%v", errs)
+	}
+	return svcs, nil
 }
 
 // ListServices return a list of services created as systemd instance.
@@ -189,6 +228,67 @@ func ListServices() ([]IndexService, error) {
 	}
 
 	return index.Services, nil
+}
+
+// ListRunningService return a list of systemd running services
+func ListRunningService(instanceName string) (IndexService, error) {
+	is, err := ListService(instanceName)
+	if err != nil {
+		return IndexService{}, err
+	}
+
+	svc, err := GetSystemDProcess(instanceName)
+	if err != nil {
+		return IndexService{}, err
+	}
+
+	status, err := svc.Status()
+	if err != nil {
+		return IndexService{}, err
+	}
+
+	if status == service.StatusRunning {
+		is.Status = utils.PROCESS_STATUS_RUNNING
+		return is, nil
+	}
+
+	return IndexService{}, err
+}
+
+// ListRunningService return a list of systemd running services
+func ListRunningServices() ([]IndexService, error) {
+	var indSvcs []IndexService
+
+	ss, err := ListServices()
+	if err != nil {
+		return nil, err
+	}
+
+	indSvcs = ss
+	var runningSS []IndexService
+	var errs []error = nil
+	for _, s := range indSvcs {
+		svc, err := GetSystemDProcess(s.Name)
+		if err != nil {
+			errs = append(errs, err)
+		}
+
+		status, err := svc.Status()
+		if err != nil {
+			errs = append(errs, err)
+		}
+
+		if status == service.StatusRunning {
+			s.Status = utils.PROCESS_STATUS_RUNNING
+			runningSS = append(runningSS, s)
+		}
+	}
+
+	if len(errs) > 0 {
+		return runningSS, fmt.Errorf(fmt.Sprintf("%v", errs))
+	}
+
+	return runningSS, nil
 }
 
 // IsServiceExist checks if service exist.

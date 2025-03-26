@@ -1,13 +1,10 @@
 package process
 
 import (
-	"fmt"
-	cmdUtils "go-systemd-docker/pkg/cmd/utils"
 	"go-systemd-docker/pkg/system"
 	"go-systemd-docker/pkg/utils"
 	"os"
 
-	"github.com/kardianos/service"
 	"github.com/kataras/tableprinter"
 	"github.com/kataras/tablewriter"
 	"github.com/spf13/cobra"
@@ -44,61 +41,25 @@ func init() {
 			printer := tableprinter.New(os.Stdout)
 			printer.HeaderLine = false
 			printer.HeaderFgColor = tablewriter.FgGreenColor
+			var runningSS []system.IndexService
 
 			if len(instanceName) > 0 {
-				s, err := system.ListService(instanceName)
+				is, err := system.ListRunningService(instanceName)
 				if err != nil {
 					utils.Terminate(err.Error())
 				}
 
-				svc, err := cmdUtils.GetSystemDProcess(instanceName)
-				if err != nil {
-					utils.Terminate(err.Error())
-				}
-
-				status, err := svc.Status()
-				if err != nil {
-					utils.Terminate(err.Error())
-				}
-
-				if status == service.StatusRunning {
-					s.Status = utils.PROCESS_STATUS_RUNNING
-					printer.Print(s)
-				}
-
+				runningSS = append(runningSS, is)
 			} else {
-				ss, err := system.ListServices()
+				ss, err := system.ListRunningServices()
 				if err != nil {
 					utils.Terminate(err.Error())
 				}
 
-				var runningSS []system.IndexService
-				var errs []error = nil
-				for _, s := range ss {
-					svc, err := cmdUtils.GetSystemDProcess(s.Name)
-					if err != nil {
-						errs = append(errs, err)
-					}
-
-					status, err := svc.Status()
-					if err != nil {
-						errs = append(errs, err)
-					}
-
-					if status == service.StatusRunning {
-						s.Status = utils.PROCESS_STATUS_RUNNING
-						runningSS = append(runningSS, s)
-					} else if *flags.all && status == service.StatusStopped {
-						s.Status = utils.PROCESS_STATUS_STOPPED
-						runningSS = append(runningSS, s)
-					}
-				}
-				printer.Print(runningSS)
-
-				if len(errs) > 0 {
-					utils.Terminate(fmt.Sprintf("%v", errs))
-				}
+				runningSS = ss
 			}
+
+			printer.Print(runningSS)
 		},
 	}
 
