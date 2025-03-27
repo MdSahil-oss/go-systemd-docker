@@ -1,2 +1,2 @@
-./go-systemd-docker
-./sysd
+go-systemd-docker
+sysd
