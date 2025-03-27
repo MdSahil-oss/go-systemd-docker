@@ -67,6 +67,8 @@ func init() {
 				system.WithExecutable(utils.GetDockerExecutablePath()),
 				system.WithArguments([]string{
 					"run",
+					"--name",
+					instanceName,
 					imageName,
 				}),
 				// Add other docker supported ...args
