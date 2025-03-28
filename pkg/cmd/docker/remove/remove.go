@@ -6,6 +6,7 @@ import (
 	"go-systemd-docker/pkg/cmd/stop"
 	"go-systemd-docker/pkg/system"
 	"go-systemd-docker/pkg/utils"
+	"io"
 	"os/exec"
 
 	"github.com/spf13/cobra"
@@ -26,51 +27,69 @@ func init() {
 			// If so, then first remove all the running process (promt user for confirmation)
 			// Then remove the images using docker executable
 
-			// Validate
-			svcs, err := system.ListServices()
-			if err != nil {
-				utils.Terminate(err.Error())
-			}
-
-			if len(svcs) == 0 {
-				utils.Terminate(fmt.Sprintf("no image found with %s name", args[0]))
-			}
-
-			isImageExist := false
-			// Checks the services running on the system using the given image then stop & remove them.
-			for _, svc := range svcs {
-				if svc.Image == args[0] {
-					isImageExist = true
-					// Checks if the service is running.
-					runningSVC, err := system.ListRunningService(svc.Name)
-					if err != nil {
-						cmdDelete.DeleteCmd.Run(cmd, []string{runningSVC.Name})
-						continue
-					}
-
-					// Stops && removes.
-					stop.StopCmd.Run(cmd, []string{runningSVC.Name})
-					cmdDelete.DeleteCmd.Run(cmd, []string{runningSVC.Name})
-				}
-			}
-
-			// Now remove the image if nothing else is running on the system using the same image.
-			if isImageExist {
-				dps := exec.Command("bash", "-c", "docker ps | grep -i", args[0])
-				dpsOutput, err := dps.CombinedOutput()
+			for _, element := range args {
+				// Validate
+				svcs, err := system.ListServices()
 				if err != nil {
 					utils.Terminate(err.Error())
 				}
 
-				if len(string(dpsOutput)) == 0 {
-					drmi := exec.Command("bash", "-c", "docker rmi -f", args[0])
-					if _, err := drmi.CombinedOutput(); err != nil {
-						utils.Terminate(err.Error())
+				if len(svcs) == 0 {
+					utils.Terminate(fmt.Sprintf("no image found with %s name", element))
+				}
+
+				isImageExist := false
+				// Checks the services running on the system using the given image then stop & remove them.
+				for _, svc := range svcs {
+					if svc.Image == element {
+						isImageExist = true
+						// Checks if the service is running.
+						runningSVC, err := system.ListRunningService(svc.Name)
+						if err != nil {
+							cmdDelete.DeleteCmd.Run(cmd, []string{runningSVC.Name})
+							continue
+						}
+
+						// Stops && removes.
+						stop.StopCmd.Run(cmd, []string{runningSVC.Name})
+						cmdDelete.DeleteCmd.Run(cmd, []string{runningSVC.Name})
 					}
 				}
-			} else {
-				utils.Terminate(fmt.Sprintf("image %s is not utilized by this tool", args[0]))
+
+				// Now remove the image if nothing else is running on the system using the same image.
+				if isImageExist {
+					dps := exec.Command("bash", "-c", fmt.Sprintf("docker ps"))
+					dg := exec.Command("bash", "-c", fmt.Sprintf("grep -i %s", element))
+					rDps, wDps := io.Pipe()
+
+					dps.Stdout = wDps
+					dg.Stdin = rDps
+
+					if err := dps.Start(); err != nil {
+						utils.Terminate(fmt.Sprintf("couldn't execute 'docker ps -a' : %s", err.Error()))
+					}
+
+					go func() {
+						dps.Wait()
+						wDps.Close()
+					}()
+
+					dgOutput, err := dg.CombinedOutput()
+					if err != nil {
+						utils.Terminate(fmt.Sprintf("couldn't execute 'grep -i' : %s\n%s", err.Error(), string(dgOutput)))
+					}
+
+					if len(string(dgOutput)) == 0 {
+						drmi := exec.Command("docker", "rmi -f", element)
+						if err := drmi.Run(); err != nil {
+							utils.Terminate(err.Error())
+						}
+					}
+				} else {
+					utils.Terminate(fmt.Sprintf("image %s is not utilized by this tool", element))
+				}
 			}
+
 		},
 	}
 }
