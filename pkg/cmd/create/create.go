@@ -43,30 +43,48 @@ func init() {
 				instanceName = args[1]
 			}
 
-			// Validate the given image if exist.
-			dSearchCmd := exec.Command("docker", "search", "--format=json", imageName)
-			dSearchOutput, err := dSearchCmd.CombinedOutput()
+			// **Validate the given image if exist by pulling the image locally.**
+
+			// Checks image's local availablity.
+			dImagesCmd := exec.Command("docker", "images", "--format=json", imageName)
+			dImagesOutput, err := dImagesCmd.CombinedOutput()
 			if err != nil {
-				utils.Terminate(fmt.Sprintf("docker search: %s\n%s", err.Error(), dSearchOutput))
+				utils.Terminate(fmt.Sprintf("docker search: %s\n%s", err.Error(), dImagesOutput))
 			}
 
-			if len(dSearchOutput) == 0 {
-				utils.Terminate(fmt.Sprintf("no image found with %s name", imageName))
-			}
-
-			if len(instanceName) == 0 {
-				// Assign a random name to `instanceName`.
-				instanceName = randstr.Word(8)
-
-				isNotInteractive, err := command.Flags().GetBool("not-interactive")
+			if len(dImagesOutput) == 0 {
+				// Checks image's registry availablity.
+				dSearchCmd := exec.Command("docker", "search", "--format=json", imageName)
+				dSearchOutput, err := dSearchCmd.CombinedOutput()
 				if err != nil {
-					utils.Terminate(err.Error())
+					utils.Terminate(fmt.Sprintf("docker search: %s\n%s", err.Error(), dSearchOutput))
 				}
 
-				if !isNotInteractive {
-					cmdUtils.PromtForConfirmation(
-						fmt.Sprintf(`Are you sure you want to run '%s' image as systemd process A random name '%s' will be assigned to systemd instance.`, imageName, instanceName),
-					)
+				if len(dSearchOutput) == 0 {
+					utils.Terminate(fmt.Sprintf("no image found with %s name", imageName))
+				}
+
+				// Checks if image is pullable.
+				dPullCmd := exec.Command("docker", "pull", imageName)
+				dPullOutput, err := dPullCmd.CombinedOutput()
+				if err != nil {
+					utils.Terminate(fmt.Sprintf("docker pull: %s\n%s", err.Error(), dPullOutput))
+				}
+
+				if len(instanceName) == 0 {
+					// Assign a random name to `instanceName`.
+					instanceName = randstr.Word(8)
+
+					isNotInteractive, err := command.Flags().GetBool("not-interactive")
+					if err != nil {
+						utils.Terminate(err.Error())
+					}
+
+					if !isNotInteractive {
+						cmdUtils.PromtForConfirmation(
+							fmt.Sprintf(`Are you sure you want to run '%s' image as systemd process A random name '%s' will be assigned to systemd instance.`, imageName, instanceName),
+						)
+					}
 				}
 			}
 
