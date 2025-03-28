@@ -4,6 +4,7 @@ import (
 	"fmt"
 	cmdUtils "go-systemd-docker/pkg/cmd/utils"
 	"go-systemd-docker/pkg/system"
+	"os/exec"
 
 	"go-systemd-docker/pkg/utils"
 
@@ -25,7 +26,9 @@ func init() {
 		Aliases: []string{"add"},
 		Short:   "Register container as Systemd process.",
 		Long: `This command registers container as Systemd process.
-		e.g. sysd create container-image-name`,
+		e.g. sysd create nginx
+			sysd create nginx sample
+			sysd create nginx:latest sample`,
 		Args: cobra.RangeArgs(1, 2),
 		PreRun: func(command *cobra.Command, args []string) {
 			if len(args) > 1 && len(*flags.name) > 0 {
@@ -38,6 +41,17 @@ func init() {
 			var instanceName string = *flags.name
 			if len(args) > 1 {
 				instanceName = args[1]
+			}
+
+			// Validate the given image if exist.
+			dSearchCmd := exec.Command("docker", "search", "--format=json", imageName)
+			dSearchOutput, err := dSearchCmd.CombinedOutput()
+			if err != nil {
+				utils.Terminate(fmt.Sprintf("docker search: %s\n%s", err.Error(), dSearchOutput))
+			}
+
+			if len(dSearchOutput) == 0 {
+				utils.Terminate(fmt.Sprintf("no image found with %s name", imageName))
 			}
 
 			if len(instanceName) == 0 {
