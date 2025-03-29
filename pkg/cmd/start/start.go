@@ -23,11 +23,11 @@ func init() {
 		Args: cobra.RangeArgs(0, 1),
 		PreRun: func(cmd *cobra.Command, args []string) {
 			if len(args) > 0 && len(*flags.name) > 0 {
-				utils.Terminate("please provide either args[0] or --name not both")
+				utils.TerminateWithError("please provide either args[0] or --name not both")
 			}
 
 			if len(args) == 0 && len(*flags.name) == 0 {
-				utils.Terminate("please provide either args[0] or --name")
+				utils.TerminateWithError("please provide either args[0] or --name")
 			}
 		},
 		Run: func(cmd *cobra.Command, args []string) {
@@ -38,22 +38,22 @@ func init() {
 
 			svc, err := system.GetSystemDProcess(instanceName)
 			if err != nil {
-				utils.Terminate(err.Error())
+				utils.TerminateWithError(err.Error())
 			}
 
 			// logger, err = svc.Logger(nil)
 			// if err != nil {
-			// 	utils.Terminate(err.Error())
+			// 	utils.TerminateWithError(err.Error())
 			// 	// log.Fatal(err)
 			// }
 
 			if err := svc.Start(); err != nil {
 				// logger.Error(err)
-				utils.Terminate(err.Error())
+				utils.TerminateWithError(err.Error())
 			}
 
 			// if err = svc.Run(); err != nil {
-			// 	utils.Terminate(err.Error())
+			// 	utils.TerminateWithError(err.Error())
 			// }
 		},
 	}

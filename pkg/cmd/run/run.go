@@ -24,7 +24,7 @@ func init() {
 		Args: cobra.RangeArgs(1, 2),
 		PreRun: func(cmd *cobra.Command, args []string) {
 			if len(args) > 1 && len(*flags.name) > 0 {
-				utils.Terminate("please provide either args[1] or --name not both")
+				utils.TerminateWithError("please provide either args[1] or --name not both")
 			}
 		},
 		Run: func(cmd *cobra.Command, args []string) {

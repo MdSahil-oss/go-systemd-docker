@@ -1,6 +1,7 @@
 package delete
 
 import (
+	"fmt"
 	cmdUtils "go-systemd-docker/pkg/cmd/utils"
 	"go-systemd-docker/pkg/system"
 	"go-systemd-docker/pkg/utils"
@@ -28,23 +29,24 @@ func init() {
 		Args: cobra.MinimumNArgs(0),
 		PreRun: func(command *cobra.Command, args []string) {
 			if len(args) > 0 && len(*flags.name) > 0 {
-				utils.Terminate("please provide either args[0] or --name not both")
+				utils.TerminateWithError("please provide either args[0] or --name not both")
 			}
 
 			if !*flags.all &&
 				len(args) == 0 &&
 				len(*flags.name) == 0 {
-				utils.Terminate("please provide either args[0] or --name")
+				utils.TerminateWithError("please provide either args[0] or --name")
 			}
 		},
 		Run: func(command *cobra.Command, args []string) {
+			var errs []error
 			var instanceNames = []string{*flags.name}
 			if *flags.all {
 				cmdUtils.PromtForConfirmation("Are you sure? to delete all the instances")
 				instanceNames = nil
 				svcs, err := system.ListServices()
 				if err != nil {
-					utils.Terminate(err.Error())
+					utils.TerminateWithError(err.Error())
 				}
 
 				for _, svc := range svcs {
@@ -58,16 +60,19 @@ func init() {
 			for _, instanceName := range instanceNames {
 				svc, err := system.GetSystemDProcess(instanceName)
 				if err != nil {
-					utils.Terminate(err.Error())
+					errs = append(errs, err)
+					continue
 				}
 
 				svcStatus, err := svc.Status()
 				if err != nil {
-					utils.Terminate(err.Error())
+					errs = append(errs, err)
+					continue
 				}
 
 				if !*flags.force && svcStatus == service.StatusRunning {
-					utils.Terminate("service is running, please force stop it using '-f'")
+					errs = append(errs, fmt.Errorf("service %s is running, please force stop it using '-f'", instanceName))
+					continue
 				}
 
 				// logger, err = svc.Logger(nil)
@@ -79,19 +84,26 @@ func init() {
 				if svcStatus == service.StatusRunning {
 					if err := svc.Stop(); err != nil {
 						// logger.Error(err)
-						utils.Terminate(err.Error())
+						errs = append(errs, err)
+						continue
 					}
 				}
 
 				if err := svc.Uninstall(); err != nil {
 					// logger.Error(err)
-					utils.Terminate(err.Error())
+					errs = append(errs, err)
+					continue
 				}
 
 				// remove the existing file.
 				if err := system.DeleteService(instanceName); err != nil {
-					utils.Terminate(err.Error())
+					errs = append(errs, err)
+					continue
 				}
+			}
+
+			for _, err := range errs {
+				utils.TerminateWithError(err.Error())
 			}
 		},
 	}

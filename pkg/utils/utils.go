@@ -31,12 +31,12 @@ var (
 func GetDockerExecutablePath() string {
 	cmdPath, err := exec.LookPath("docker")
 	if err != nil {
-		Terminate(fmt.Sprintf("docker doesn't exist probabbly: %s:", err.Error()))
+		TerminateWithError(fmt.Sprintf("docker doesn't exist probabbly: %s:", err.Error()))
 		return DEFAULT_DOCKER_EXECUTABLE_PATH
 	}
 
 	if cmdPath, err = filepath.Abs(cmdPath); err != nil {
-		Terminate(err.Error())
+		TerminateWithError(err.Error())
 		return DEFAULT_DOCKER_EXECUTABLE_PATH
 	}
 
@@ -53,8 +53,14 @@ func GetHomeDir() string {
 	return str
 }
 
-// Terminate prints given string and exit with 1
-func Terminate(str string) {
+// TerminateWithError prints given string and exit with 1
+func TerminateWithError(str string) {
 	fmt.Println("err:", str)
 	os.Exit(1)
+}
+
+// TerminateWithOutput prints given string and exit with 0
+func TerminateWithOutput(str string) {
+	fmt.Println(str)
+	os.Exit(0)
 }

@@ -27,7 +27,7 @@ func init() {
 		Args: cobra.RangeArgs(0, 1),
 		PreRun: func(cmd *cobra.Command, args []string) {
 			if len(args) > 0 && len(*flags.name) > 0 {
-				utils.Terminate("please provide either args[0] or --name not both")
+				utils.TerminateWithError("please provide either args[0] or --name not both")
 			}
 		},
 		Run: func(cmd *cobra.Command, args []string) {
@@ -38,7 +38,7 @@ func init() {
 
 			svcs, err := system.ListServices()
 			if err != nil {
-				utils.Terminate(err.Error())
+				utils.TerminateWithError(err.Error())
 			}
 
 			printer := tableprinter.New(os.Stdout)

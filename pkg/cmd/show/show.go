@@ -27,7 +27,7 @@ func init() {
 		Args: cobra.RangeArgs(0, 1),
 		PreRun: func(cmd *cobra.Command, args []string) {
 			if len(args) > 0 && len(*flags.name) > 0 {
-				utils.Terminate("please provide either args[0] or --name not both")
+				utils.TerminateWithError("please provide either args[0] or --name not both")
 			}
 		},
 		Run: func(cmd *cobra.Command, args []string) {
@@ -38,7 +38,7 @@ func init() {
 
 			indexByte, err := os.ReadFile(utils.INDEX_FILE_PATH)
 			if err != nil {
-				utils.Terminate(err.Error())
+				utils.TerminateWithError(err.Error())
 				return
 			}
 
@@ -48,13 +48,13 @@ func init() {
 			}
 
 			if !system.IsServiceExist(instanceName) {
-				utils.Terminate("service doesn't exist")
+				utils.TerminateWithError("service doesn't exist")
 				return
 			}
 
 			index := system.Index{}
 			if err = yaml.Unmarshal(indexByte, &index); err != nil {
-				utils.Terminate(err.Error())
+				utils.TerminateWithError(err.Error())
 				return
 			}
 
@@ -62,7 +62,7 @@ func init() {
 				if svc.Name == instanceName {
 					manifestByte, err := os.ReadFile(svc.Path)
 					if err != nil {
-						utils.Terminate(err.Error())
+						utils.TerminateWithError(err.Error())
 						return
 					}
 
@@ -71,7 +71,7 @@ func init() {
 				}
 			}
 
-			utils.Terminate("Manifest doesn't exist")
+			utils.TerminateWithError("Manifest doesn't exist")
 		},
 	}
 

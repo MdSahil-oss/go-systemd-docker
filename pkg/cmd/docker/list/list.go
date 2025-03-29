@@ -19,17 +19,17 @@ func init() {
 		e.g. sysd docker ls`,
 		PreRun: func(cmd *cobra.Command, args []string) {
 			if len(args) > 0 {
-				utils.Terminate("no argument was expected")
+				utils.TerminateWithError("no argument was expected")
 			}
 		},
 		Run: func(cmd *cobra.Command, args []string) {
 			svcs, err := system.ListServices()
 			if err != nil {
-				utils.Terminate(err.Error())
+				utils.TerminateWithError(err.Error())
 			}
 
 			if len(svcs) == 0 {
-				utils.Terminate("no image found")
+				utils.TerminateWithError("no image found")
 			}
 
 			dockerUtils.PrintImagesFromIndexService(svcs)

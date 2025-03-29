@@ -32,7 +32,7 @@ func init() {
 		Args: cobra.RangeArgs(1, 2),
 		PreRun: func(command *cobra.Command, args []string) {
 			if len(args) > 1 && len(*flags.name) > 0 {
-				utils.Terminate("please provide either args[1] or --name not both")
+				utils.TerminateWithError("please provide either args[1] or --name not both")
 			}
 		},
 		Run: func(command *cobra.Command, args []string) {
@@ -49,7 +49,7 @@ func init() {
 			dImagesCmd := exec.Command("docker", "images", "--format=json", imageName)
 			dImagesOutput, err := dImagesCmd.CombinedOutput()
 			if err != nil {
-				utils.Terminate(fmt.Sprintf("docker search: %s\n%s", err.Error(), dImagesOutput))
+				utils.TerminateWithError(fmt.Sprintf("docker search: %s\n%s", err.Error(), dImagesOutput))
 			}
 
 			if len(dImagesOutput) == 0 {
@@ -57,18 +57,18 @@ func init() {
 				dSearchCmd := exec.Command("docker", "search", "--format=json", imageName)
 				dSearchOutput, err := dSearchCmd.CombinedOutput()
 				if err != nil {
-					utils.Terminate(fmt.Sprintf("docker search: %s\n%s", err.Error(), dSearchOutput))
+					utils.TerminateWithError(fmt.Sprintf("docker search: %s\n%s", err.Error(), dSearchOutput))
 				}
 
 				if len(dSearchOutput) == 0 {
-					utils.Terminate(fmt.Sprintf("no image found with %s name", imageName))
+					utils.TerminateWithError(fmt.Sprintf("no image found with %s name", imageName))
 				}
 
 				// Checks if image is pullable.
 				dPullCmd := exec.Command("docker", "pull", imageName)
 				dPullOutput, err := dPullCmd.CombinedOutput()
 				if err != nil {
-					utils.Terminate(fmt.Sprintf("docker pull: %s\n%s", err.Error(), dPullOutput))
+					utils.TerminateWithError(fmt.Sprintf("docker pull: %s\n%s", err.Error(), dPullOutput))
 				}
 
 				if len(instanceName) == 0 {
@@ -77,7 +77,7 @@ func init() {
 
 					isNotInteractive, err := command.Flags().GetBool("not-interactive")
 					if err != nil {
-						utils.Terminate(err.Error())
+						utils.TerminateWithError(err.Error())
 					}
 
 					if !isNotInteractive {
@@ -89,7 +89,7 @@ func init() {
 			}
 
 			if system.IsServiceExist(instanceName) {
-				utils.Terminate(fmt.Sprintf("systemd service already exist with %s", instanceName))
+				utils.TerminateWithError(fmt.Sprintf("systemd service already exist with %s", instanceName))
 			}
 
 			sysConfig := system.NewSystem(
@@ -108,14 +108,14 @@ func init() {
 
 			svcConfig, err := system.CreateService(sysConfig, imageName)
 			if err != nil {
-				utils.Terminate(err.Error())
+				utils.TerminateWithError(err.Error())
 			}
 
 			prg := &system.CreateProgram{}
 			s, err := service.New(prg, svcConfig)
 			if err != nil {
 				// log.Fatal(err)
-				utils.Terminate(err.Error())
+				utils.TerminateWithError(err.Error())
 			}
 
 			// logger, err = s.Logger(nil)
@@ -128,7 +128,7 @@ func init() {
 
 			if err = s.Install(); err != nil {
 				// logger.Error(err)
-				utils.Terminate(err.Error())
+				utils.TerminateWithError(err.Error())
 			}
 		},
 	}

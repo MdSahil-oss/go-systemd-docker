@@ -31,11 +31,11 @@ func init() {
 				// Validate
 				svcs, err := system.ListServices()
 				if err != nil {
-					utils.Terminate(err.Error())
+					utils.TerminateWithError(err.Error())
 				}
 
 				if len(svcs) == 0 {
-					utils.Terminate(fmt.Sprintf("no image found with %s name", element))
+					utils.TerminateWithError(fmt.Sprintf("no image found with %s name", element))
 				}
 
 				isImageExist := false
@@ -66,7 +66,7 @@ func init() {
 					dg.Stdin = rDps
 
 					if err := dps.Start(); err != nil {
-						utils.Terminate(fmt.Sprintf("couldn't execute 'docker ps -a' : %s", err.Error()))
+						utils.TerminateWithError(fmt.Sprintf("couldn't execute 'docker ps -a' : %s", err.Error()))
 					}
 
 					go func() {
@@ -76,17 +76,17 @@ func init() {
 
 					dgOutput, err := dg.CombinedOutput()
 					if err != nil {
-						utils.Terminate(fmt.Sprintf("couldn't execute 'grep -i' : %s\n%s", err.Error(), string(dgOutput)))
+						utils.TerminateWithError(fmt.Sprintf("couldn't execute 'grep -i' : %s\n%s", err.Error(), string(dgOutput)))
 					}
 
 					if len(string(dgOutput)) == 0 {
 						drmi := exec.Command("docker", "rmi -f", element)
 						if err := drmi.Run(); err != nil {
-							utils.Terminate(err.Error())
+							utils.TerminateWithError(err.Error())
 						}
 					}
 				} else {
-					utils.Terminate(fmt.Sprintf("image %s is not utilized by this tool", element))
+					utils.TerminateWithError(fmt.Sprintf("image %s is not utilized by this tool", element))
 				}
 			}
 

@@ -17,6 +17,6 @@ func PromtForConfirmation(str string) {
 
 	_, err := prompt.Run()
 	if err != nil {
-		utils.Terminate("Confirmation cancelled.")
+		utils.TerminateWithOutput("Confirmation cancelled.")
 	}
 }
