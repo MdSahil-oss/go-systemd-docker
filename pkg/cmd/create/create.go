@@ -2,19 +2,21 @@ package create
 
 import (
 	"fmt"
-	cmdUtils "go-systemd-docker/pkg/cmd/utils"
 	"go-systemd-docker/pkg/system"
-	"os/exec"
 
 	"go-systemd-docker/pkg/utils"
 
 	"github.com/kardianos/service"
 	"github.com/spf13/cobra"
-	"go.rtnl.ai/x/randstr"
 )
 
 type FlagsType struct {
-	name *string
+	name       *string
+	domainName *string
+	entrypoint *string
+	expose     *[]string
+	publish    *[]string
+	env        *[]string
 }
 
 var CreateCmd *cobra.Command
@@ -37,73 +39,34 @@ func init() {
 		},
 		Run: func(command *cobra.Command, args []string) {
 			imageName := args[0]
-
 			var instanceName string = *flags.name
 			if len(args) > 1 {
 				instanceName = args[1]
 			}
 
-			// **Validate the given image if exist by pulling the image locally.**
-
-			// Checks image's local availablity.
-			dImagesCmd := exec.Command("docker", "images", "--format=json", imageName)
-			dImagesOutput, err := dImagesCmd.CombinedOutput()
-			if err != nil {
-				utils.TerminateWithError(fmt.Sprintf("docker search: %s\n%s", err.Error(), dImagesOutput))
-			}
-
-			if len(dImagesOutput) == 0 {
-				// Checks image's registry availablity.
-				dSearchCmd := exec.Command("docker", "search", "--format=json", imageName)
-				dSearchOutput, err := dSearchCmd.CombinedOutput()
-				if err != nil {
-					utils.TerminateWithError(fmt.Sprintf("docker search: %s\n%s", err.Error(), dSearchOutput))
-				}
-
-				if len(dSearchOutput) == 0 {
-					utils.TerminateWithError(fmt.Sprintf("no image found with %s name", imageName))
-				}
-
-				// Checks if image is pullable.
-				dPullCmd := exec.Command("docker", "pull", imageName)
-				dPullOutput, err := dPullCmd.CombinedOutput()
-				if err != nil {
-					utils.TerminateWithError(fmt.Sprintf("docker pull: %s\n%s", err.Error(), dPullOutput))
-				}
-
-				if len(instanceName) == 0 {
-					// Assign a random name to `instanceName`.
-					instanceName = randstr.Word(8)
-
-					isNotInteractive, err := command.Flags().GetBool("not-interactive")
-					if err != nil {
-						utils.TerminateWithError(err.Error())
-					}
-
-					if !isNotInteractive {
-						cmdUtils.PromtForConfirmation(
-							fmt.Sprintf(`Are you sure you want to run '%s' image as systemd process A random name '%s' will be assigned to systemd instance.`, imageName, instanceName),
-						)
-					}
-				}
+			if err := validateImage(command, imageName, instanceName); err != nil {
+				utils.TerminateWithError(err.Error())
 			}
 
 			if system.IsServiceExist(instanceName) {
 				utils.TerminateWithError(fmt.Sprintf("systemd service already exist with %s", instanceName))
 			}
 
+			// serializes all flags with respective values.
+			dockerFlags := dockerFlagsCollector()
+			sysArguments := []string{
+				"run",
+				"--name",
+				instanceName,
+			}
+			sysArguments = append(sysArguments, dockerFlags...)
+			sysArguments = append(sysArguments, imageName)
 			sysConfig := system.NewSystem(
 				system.WithName(instanceName),
 				system.WithDisplayName(instanceName),
 				system.WithDescription(fmt.Sprintf("Runs %v as %v", instanceName, imageName)),
 				system.WithExecutable(utils.GetDockerExecutablePath()),
-				system.WithArguments([]string{
-					"run",
-					"--name",
-					instanceName,
-					imageName,
-				}),
-				// Add other docker supported ...args
+				system.WithArguments(sysArguments),
 			)
 
 			svcConfig, err := system.CreateService(sysConfig, imageName)
@@ -134,6 +97,11 @@ func init() {
 	}
 
 	flags = FlagsType{
-		name: CreateCmd.Flags().StringP("name", "n", "", "name of the creating instance"),
+		name:       CreateCmd.Flags().StringP("name", "n", "", "name of the creating instance"),
+		domainName: CreateCmd.Flags().StringP("domainname", "d", "", "Container NIS domain name"),
+		entrypoint: CreateCmd.Flags().String("entrypoint", "", "Overwrite the default ENTRYPOINT of the image"),
+		expose:     CreateCmd.Flags().StringSliceP("expose", "x", []string{}, "Expose a port or a range of ports"),
+		publish:    CreateCmd.Flags().StringSliceP("publish", "p", []string{}, "Publish a container's port(s) to the host"),
+		env:        CreateCmd.Flags().StringSliceP("env", "e", []string{}, "Set environment variables"),
 	}
 }
