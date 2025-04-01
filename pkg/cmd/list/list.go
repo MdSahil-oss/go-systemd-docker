@@ -10,15 +10,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type FlagsType struct {
+type Flags struct {
 	name *string
 }
 
-var ListCmd *cobra.Command
-var flags FlagsType
+type List struct {
+	Cmd   *cobra.Command
+	Flags Flags
+}
 
-func init() {
-	ListCmd = &cobra.Command{
+func New() *List {
+	list := &List{}
+
+	list.Cmd = &cobra.Command{
 		Use:     "list [flags]",
 		Short:   "List registered systemd process (container-image).",
 		Aliases: []string{"ls"},
@@ -26,12 +30,12 @@ func init() {
 		e.g. sysd ls`,
 		Args: cobra.RangeArgs(0, 1),
 		PreRun: func(cmd *cobra.Command, args []string) {
-			if len(args) > 0 && len(*flags.name) > 0 {
+			if len(args) > 0 && len(*list.Flags.name) > 0 {
 				utils.TerminateWithError("please provide either args[0] or --name not both")
 			}
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			var instanceName string = *flags.name
+			var instanceName string = *list.Flags.name
 			if len(args) > 0 {
 				instanceName = args[0]
 			}
@@ -59,7 +63,9 @@ func init() {
 		},
 	}
 
-	flags = FlagsType{
-		name: ListCmd.Flags().StringP("name", "n", "", "name of the creating instance"),
+	list.Flags = Flags{
+		name: list.Cmd.Flags().StringP("name", "n", "", "name of the creating instance"),
 	}
+
+	return list
 }

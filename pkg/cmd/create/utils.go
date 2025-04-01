@@ -8,7 +8,7 @@ import (
 )
 
 // dockerFlagsCollector serializes all flags with respective values.
-func dockerFlagsCollector() []string {
+func dockerFlagsCollector(flags Flags) []string {
 	addtionalCollectiveFlags := []string{}
 
 	if len(*flags.domainName) > 0 {

@@ -8,10 +8,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var ListCmd *cobra.Command
+type Flags struct {
+}
 
-func init() {
-	ListCmd = &cobra.Command{
+type List struct {
+	Cmd   *cobra.Command
+	Flags Flags
+}
+
+func New() *List {
+	list := &List{}
+
+	list.Cmd = &cobra.Command{
 		Use:     "list [flags]",
 		Short:   "List containers used by systemd proces(es)",
 		Aliases: []string{"ls"},
@@ -35,4 +43,6 @@ func init() {
 			dockerUtils.PrintImagesFromIndexService(svcs)
 		},
 	}
+
+	return list
 }

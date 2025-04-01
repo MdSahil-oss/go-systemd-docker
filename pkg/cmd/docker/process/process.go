@@ -8,10 +8,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var ProcessCmd *cobra.Command
+type Flags struct {
+}
 
-func init() {
-	ProcessCmd = &cobra.Command{
+type Process struct {
+	Cmd   *cobra.Command
+	Flags Flags
+}
+
+func New() *Process {
+	process := &Process{}
+
+	process.Cmd = &cobra.Command{
 		Use:     "process [flags]",
 		Short:   "List running systemd process images.",
 		Aliases: []string{"ps"},
@@ -35,4 +43,6 @@ func init() {
 			dockerUtils.PrintImagesFromIndexService(isvcs)
 		},
 	}
+
+	return process
 }

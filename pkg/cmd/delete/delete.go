@@ -5,22 +5,26 @@ import (
 	cmdUtils "go-systemd-docker/pkg/cmd/utils"
 	"go-systemd-docker/pkg/system"
 	"go-systemd-docker/pkg/utils"
+	"os/exec"
 
 	"github.com/kardianos/service"
 	"github.com/spf13/cobra"
 )
 
-type FlagsType struct {
+type Flags struct {
 	force *bool
 	name  *string
 	all   *bool
 }
 
-var DeleteCmd *cobra.Command
-var flags FlagsType
+type Delete struct {
+	Cmd   *cobra.Command
+	Flags Flags
+}
 
-func init() {
-	DeleteCmd = &cobra.Command{
+func New() *Delete {
+	var delete = &Delete{}
+	delete.Cmd = &cobra.Command{
 		Use:     "delete [flags]",
 		Aliases: []string{"rm", "remove"},
 		Short:   "Deregister  already register container as Systemd process.",
@@ -28,20 +32,20 @@ func init() {
 		e.g. sysd delete container-image-name`,
 		Args: cobra.MinimumNArgs(0),
 		PreRun: func(command *cobra.Command, args []string) {
-			if len(args) > 0 && len(*flags.name) > 0 {
+			if len(args) > 0 && len(*delete.Flags.name) > 0 {
 				utils.TerminateWithError("please provide either args[0] or --name not both")
 			}
 
-			if !*flags.all &&
+			if !*delete.Flags.all &&
 				len(args) == 0 &&
-				len(*flags.name) == 0 {
+				len(*delete.Flags.name) == 0 {
 				utils.TerminateWithError("please provide either args[0] or --name")
 			}
 		},
 		Run: func(command *cobra.Command, args []string) {
 			var errs []error
-			var instanceNames = []string{*flags.name}
-			if *flags.all {
+			var instanceNames = []string{*delete.Flags.name}
+			if *delete.Flags.all {
 				cmdUtils.PromtForConfirmation("Are you sure? to delete all the instances")
 				instanceNames = nil
 				svcs, err := system.ListServices()
@@ -70,7 +74,7 @@ func init() {
 					continue
 				}
 
-				if !*flags.force && svcStatus == service.StatusRunning {
+				if !*delete.Flags.force && svcStatus == service.StatusRunning {
 					errs = append(errs, fmt.Errorf("service %s is running, please force stop it using '-f'", instanceName))
 					continue
 				}
@@ -100,17 +104,27 @@ func init() {
 					errs = append(errs, err)
 					continue
 				}
+
+				// remove docker-container instance
+				drm := exec.Command("docker", "rm", instanceName)
+				drmOutput, err := drm.CombinedOutput()
+				if err != nil {
+					errs = append(errs, fmt.Errorf("docker rm: %s\n%s", drmOutput, err.Error()))
+					continue
+				}
 			}
 
-			for _, err := range errs {
-				utils.TerminateWithError(err.Error())
+			if len(errs) > 0 {
+				utils.TerminateWithError(fmt.Sprintf("%v", errs))
 			}
 		},
 	}
 
-	flags = FlagsType{
-		force: DeleteCmd.Flags().BoolP("force", "f", false, "force delete packages/instances"),
-		name:  DeleteCmd.Flags().StringP("name", "n", "", "name of the deleting instance"),
-		all:   DeleteCmd.Flags().BoolP("all", "a", false, "select all packages/instances to delete"),
+	delete.Flags = Flags{
+		force: delete.Cmd.Flags().BoolP("force", "f", false, "force delete packages/instances"),
+		name:  delete.Cmd.Flags().StringP("name", "n", "", "name of the deleting instance"),
+		all:   delete.Cmd.Flags().BoolP("all", "a", false, "select all packages/instances to delete"),
 	}
+
+	return delete
 }

@@ -38,20 +38,23 @@ func init() {
 }
 
 func Execute() {
+	// Collecting all the cmds with flags as components here.
+	dockerComp := docker.New()
+
 	// Registers groups
-	rootCmd.AddGroup(docker.DockerGrp)
+	rootCmd.AddGroup(dockerComp.Group)
 
 	// registers cmds.
 	rootCmd.AddCommand(
-		create.CreateCmd,
-		delete.DeleteCmd,
-		docker.DockerCmd,
-		list.ListCmd,
-		process.ProcessCmd,
-		run.RunCmd,
-		show.ShowCmd,
-		start.StartCmd,
-		stop.StopCmd,
+		dockerComp.Cmd,
+		create.New().Cmd,
+		delete.New().Cmd,
+		list.New().Cmd,
+		run.New().Cmd,
+		show.New().Cmd,
+		start.New().Cmd,
+		stop.New().Cmd,
+		process.New().Cmd,
 	)
 
 	if err := rootCmd.Execute(); err != nil {

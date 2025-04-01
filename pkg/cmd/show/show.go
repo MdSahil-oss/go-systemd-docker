@@ -10,28 +10,32 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-type FlagsType struct {
+type Flags struct {
 	name *string
 }
 
-var ShowCmd *cobra.Command
-var flags FlagsType
+type Show struct {
+	Cmd   *cobra.Command
+	Flags Flags
+}
 
-func init() {
-	ShowCmd = &cobra.Command{
-		Use:     "show [flags]",
-		Short:   "Show systemd process configuration for the instance name.",
-		Aliases: []string{"ps"},
+func New() *Show {
+	show := &Show{}
+
+	show.Cmd = &cobra.Command{
+		Use:   "show [flags]",
+		Short: "Show systemd process configuration for the instance name.",
+		// Aliases: []string{"show"},
 		Long: `This command List running systemd process (container-image).
 		e.g. sysd show sample-instance`,
 		Args: cobra.RangeArgs(0, 1),
 		PreRun: func(cmd *cobra.Command, args []string) {
-			if len(args) > 0 && len(*flags.name) > 0 {
+			if len(args) > 0 && len(*show.Flags.name) > 0 {
 				utils.TerminateWithError("please provide either args[0] or --name not both")
 			}
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			var instanceName string = *flags.name
+			var instanceName string = *show.Flags.name
 			if len(args) > 0 {
 				instanceName = args[0]
 			}
@@ -42,7 +46,7 @@ func init() {
 				return
 			}
 
-			if (len(args) == 0 && len(*flags.name) == 0) || instanceName == "index" {
+			if (len(args) == 0 && len(*show.Flags.name) == 0) || instanceName == "index" {
 				fmt.Println(string(indexByte))
 				return
 			}
@@ -75,7 +79,9 @@ func init() {
 		},
 	}
 
-	flags = FlagsType{
-		name: ShowCmd.Flags().StringP("name", "n", "", "name of the creating instance"),
+	show.Flags = Flags{
+		name: show.Cmd.Flags().StringP("name", "n", "", "name of the creating instance"),
 	}
+
+	return show
 }

@@ -2,8 +2,8 @@ package remove
 
 import (
 	"fmt"
-	cmdDelete "go-systemd-docker/pkg/cmd/delete"
-	"go-systemd-docker/pkg/cmd/stop"
+	deleteCmd "go-systemd-docker/pkg/cmd/delete"
+	stopCmd "go-systemd-docker/pkg/cmd/stop"
 	"go-systemd-docker/pkg/system"
 	"go-systemd-docker/pkg/utils"
 	"io"
@@ -12,10 +12,18 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var RemoveCmd *cobra.Command
+type Flags struct {
+}
 
-func init() {
-	RemoveCmd = &cobra.Command{
+type Process struct {
+	Cmd   *cobra.Command
+	Flags Flags
+}
+
+func New() *Process {
+	process := &Process{}
+
+	process.Cmd = &cobra.Command{
 		Use:     "remove [flags]",
 		Short:   "Remove avaiable images used by systemd process.",
 		Aliases: []string{"rm"},
@@ -46,13 +54,13 @@ func init() {
 						// Checks if the service is running.
 						runningSVC, err := system.ListRunningService(svc.Name)
 						if err != nil {
-							cmdDelete.DeleteCmd.Run(cmd, []string{runningSVC.Name})
+							deleteCmd.New().Cmd.Run(cmd, []string{runningSVC.Name})
 							continue
 						}
 
 						// Stops && removes.
-						stop.StopCmd.Run(cmd, []string{runningSVC.Name})
-						cmdDelete.DeleteCmd.Run(cmd, []string{runningSVC.Name})
+						stopCmd.New().Cmd.Run(cmd, []string{runningSVC.Name})
+						deleteCmd.New().Cmd.Run(cmd, []string{runningSVC.Name})
 					}
 				}
 
@@ -89,7 +97,8 @@ func init() {
 					utils.TerminateWithError(fmt.Sprintf("image %s is not utilized by this tool", element))
 				}
 			}
-
 		},
 	}
+
+	return process
 }

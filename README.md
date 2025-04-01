@@ -28,9 +28,13 @@ This project creates a golang based CLI that manages docker containers as system
   - `Buggy`: `rm` remove an image or all the images (on `all` flag). If the image instance exist on the system then promts user for confirmation.
 - `Done`: Add validation to check if there docker image exist.
 - `Done`: Try to remove sudo prepending before `sysd`.
-- Add support for other docker run flags and more to the `run` sub-cmd.
+- `Done`: Add support for other docker run flags and more to the `run` sub-cmd.
   - Add support for only relatable flags (Don't think all flags are needed).
   - Give user options to add docker run flags either imperatively or declaratively.
+- `Done`: Update `run` command to provide same flags.
+- Update printing table so that you don't see `status` column on printing.
+- Enable logging of services.
+- consider to add support for tests.
 - Update other commands so on.
 
 ## Going on

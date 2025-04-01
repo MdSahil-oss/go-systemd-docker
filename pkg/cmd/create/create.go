@@ -3,27 +3,20 @@ package create
 import (
 	"fmt"
 	"go-systemd-docker/pkg/system"
-
 	"go-systemd-docker/pkg/utils"
 
 	"github.com/kardianos/service"
 	"github.com/spf13/cobra"
 )
 
-type FlagsType struct {
-	name       *string
-	domainName *string
-	entrypoint *string
-	expose     *[]string
-	publish    *[]string
-	env        *[]string
+type Create struct {
+	Cmd   *cobra.Command
+	Flags Flags
 }
 
-var CreateCmd *cobra.Command
-var flags FlagsType
-
-func init() {
-	CreateCmd = &cobra.Command{
+func New() *Create {
+	var create = &Create{}
+	create.Cmd = &cobra.Command{
 		Use:     "create [flags]",
 		Aliases: []string{"add"},
 		Short:   "Register container as Systemd process.",
@@ -33,13 +26,13 @@ func init() {
 			sysd create nginx:latest sample`,
 		Args: cobra.RangeArgs(1, 2),
 		PreRun: func(command *cobra.Command, args []string) {
-			if len(args) > 1 && len(*flags.name) > 0 {
+			if len(args) > 1 && len(*create.Flags.name) > 0 {
 				utils.TerminateWithError("please provide either args[1] or --name not both")
 			}
 		},
 		Run: func(command *cobra.Command, args []string) {
 			imageName := args[0]
-			var instanceName string = *flags.name
+			var instanceName string = *create.Flags.name
 			if len(args) > 1 {
 				instanceName = args[1]
 			}
@@ -53,7 +46,7 @@ func init() {
 			}
 
 			// serializes all flags with respective values.
-			dockerFlags := dockerFlagsCollector()
+			dockerFlags := dockerFlagsCollector(create.Flags)
 			sysArguments := []string{
 				"run",
 				"--name",
@@ -96,12 +89,30 @@ func init() {
 		},
 	}
 
-	flags = FlagsType{
-		name:       CreateCmd.Flags().StringP("name", "n", "", "name of the creating instance"),
-		domainName: CreateCmd.Flags().StringP("domainname", "d", "", "Container NIS domain name"),
-		entrypoint: CreateCmd.Flags().String("entrypoint", "", "Overwrite the default ENTRYPOINT of the image"),
-		expose:     CreateCmd.Flags().StringSliceP("expose", "x", []string{}, "Expose a port or a range of ports"),
-		publish:    CreateCmd.Flags().StringSliceP("publish", "p", []string{}, "Publish a container's port(s) to the host"),
-		env:        CreateCmd.Flags().StringSliceP("env", "e", []string{}, "Set environment variables"),
+	create.Flags = Flags{
+		name:       create.Cmd.Flags().StringP("name", "n", "", "name of the creating instance"),
+		domainName: create.Cmd.Flags().StringP("domainname", "d", "", "Container NIS domain name"),
+		entrypoint: create.Cmd.Flags().String("entrypoint", "", "Overwrite the default ENTRYPOINT of the image"),
+		expose:     create.Cmd.Flags().StringSliceP("expose", "x", []string{}, "Expose a port or a range of ports"),
+		publish:    create.Cmd.Flags().StringSliceP("publish", "p", []string{}, "Publish a container's port(s) to the host"),
+		env:        create.Cmd.Flags().StringSliceP("env", "e", []string{}, "Set environment variables"),
 	}
+
+	return create
 }
+
+// var CreateCmd *cobra.Command
+// var flags Flags
+
+// func init() {
+// 	CreateCmd =
+
+// 	flags = Flags{
+// 		name:       CreateCmd.Flags().StringP("name", "n", "", "name of the creating instance"),
+// 		domainName: CreateCmd.Flags().StringP("domainname", "d", "", "Container NIS domain name"),
+// 		entrypoint: CreateCmd.Flags().String("entrypoint", "", "Overwrite the default ENTRYPOINT of the image"),
+// 		expose:     CreateCmd.Flags().StringSliceP("expose", "x", []string{}, "Expose a port or a range of ports"),
+// 		publish:    CreateCmd.Flags().StringSliceP("publish", "p", []string{}, "Publish a container's port(s) to the host"),
+// 		env:        CreateCmd.Flags().StringSliceP("env", "e", []string{}, "Set environment variables"),
+// 	}
+// }

@@ -7,31 +7,35 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type FlagsType struct {
+type Flags struct {
 	name *string
 }
 
-var StartCmd *cobra.Command
-var flags FlagsType
+type Start struct {
+	Cmd   *cobra.Command
+	Flags Flags
+}
 
-func init() {
-	StartCmd = &cobra.Command{
+func New() *Start {
+	start := &Start{}
+
+	start.Cmd = &cobra.Command{
 		Use:   "start [flags]",
 		Short: "Continue running stopped systemd process (container-image).",
 		Long: `This command continue running stopped systemd process (container-image).
 		e.g. sysd start registered-systemd-instance-name`,
 		Args: cobra.RangeArgs(0, 1),
 		PreRun: func(cmd *cobra.Command, args []string) {
-			if len(args) > 0 && len(*flags.name) > 0 {
+			if len(args) > 0 && len(*start.Flags.name) > 0 {
 				utils.TerminateWithError("please provide either args[0] or --name not both")
 			}
 
-			if len(args) == 0 && len(*flags.name) == 0 {
+			if len(args) == 0 && len(*start.Flags.name) == 0 {
 				utils.TerminateWithError("please provide either args[0] or --name")
 			}
 		},
 		Run: func(cmd *cobra.Command, args []string) {
-			var instanceName string = *flags.name
+			var instanceName string = *start.Flags.name
 			if len(args) > 0 {
 				instanceName = args[0]
 			}
@@ -58,7 +62,9 @@ func init() {
 		},
 	}
 
-	flags = FlagsType{
-		name: StartCmd.Flags().StringP("name", "n", "", "name of the creating instance"),
+	start.Flags = Flags{
+		name: start.Cmd.Flags().StringP("name", "n", "", "name of the creating instance"),
 	}
+
+	return start
 }

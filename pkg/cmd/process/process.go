@@ -10,16 +10,20 @@ import (
 	"github.com/spf13/cobra"
 )
 
-type FlagsType struct {
+type Flags struct {
 	name *string
 	all  *bool
 }
 
-var ProcessCmd *cobra.Command
-var flags FlagsType
+type Process struct {
+	Cmd   *cobra.Command
+	Flags Flags
+}
 
-func init() {
-	ProcessCmd = &cobra.Command{
+func New() *Process {
+	ps := &Process{}
+
+	ps.Cmd = &cobra.Command{
 		Use:     "process [flags]",
 		Short:   "List running systemd process (container-image).",
 		Aliases: []string{"ps"},
@@ -27,12 +31,12 @@ func init() {
 		e.g. sysd ps`,
 		Args: cobra.RangeArgs(0, 1),
 		PreRun: func(command *cobra.Command, args []string) {
-			if len(args) > 0 && len(*flags.name) > 0 {
+			if len(args) > 0 && len(*ps.Flags.name) > 0 {
 				utils.TerminateWithError("please provide either args[0] or --name not both")
 			}
 		},
 		Run: func(command *cobra.Command, args []string) {
-			var instanceName string = *flags.name
+			var instanceName string = *ps.Flags.name
 			if len(args) > 0 {
 				instanceName = args[0]
 			}
@@ -63,8 +67,10 @@ func init() {
 		},
 	}
 
-	flags = FlagsType{
-		name: ProcessCmd.Flags().StringP("name", "n", "", "name of the creating sysd process"),
-		all:  ProcessCmd.Flags().BoolP("all", "a", false, "select all sysd process to list"),
+	ps.Flags = Flags{
+		name: ps.Cmd.Flags().StringP("name", "n", "", "name of the creating sysd process"),
+		all:  ps.Cmd.Flags().BoolP("all", "a", false, "select all sysd process to list"),
 	}
+
+	return ps
 }
