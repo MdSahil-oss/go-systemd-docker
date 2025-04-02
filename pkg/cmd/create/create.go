@@ -100,19 +100,3 @@ func New() *Create {
 
 	return create
 }
-
-// var CreateCmd *cobra.Command
-// var flags Flags
-
-// func init() {
-// 	CreateCmd =
-
-// 	flags = Flags{
-// 		name:       CreateCmd.Flags().StringP("name", "n", "", "name of the creating instance"),
-// 		domainName: CreateCmd.Flags().StringP("domainname", "d", "", "Container NIS domain name"),
-// 		entrypoint: CreateCmd.Flags().String("entrypoint", "", "Overwrite the default ENTRYPOINT of the image"),
-// 		expose:     CreateCmd.Flags().StringSliceP("expose", "x", []string{}, "Expose a port or a range of ports"),
-// 		publish:    CreateCmd.Flags().StringSliceP("publish", "p", []string{}, "Publish a container's port(s) to the host"),
-// 		env:        CreateCmd.Flags().StringSliceP("env", "e", []string{}, "Set environment variables"),
-// 	}
-// }

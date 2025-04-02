@@ -4,6 +4,7 @@ import (
 	"fmt"
 	deleteCmd "go-systemd-docker/pkg/cmd/delete"
 	stopCmd "go-systemd-docker/pkg/cmd/stop"
+	cmdUtils "go-systemd-docker/pkg/cmd/utils"
 	"go-systemd-docker/pkg/system"
 	"go-systemd-docker/pkg/utils"
 	"io"
@@ -15,15 +16,15 @@ import (
 type Flags struct {
 }
 
-type Process struct {
+type remove struct {
 	Cmd   *cobra.Command
 	Flags Flags
 }
 
-func New() *Process {
-	process := &Process{}
+func New() *remove {
+	remove := &remove{}
 
-	process.Cmd = &cobra.Command{
+	remove.Cmd = &cobra.Command{
 		Use:     "remove [flags]",
 		Short:   "Remove avaiable images used by systemd process.",
 		Aliases: []string{"rm"},
@@ -34,6 +35,7 @@ func New() *Process {
 			// Check if the given image actually being utilized by systemd
 			// If so, then first remove all the running process (promt user for confirmation)
 			// Then remove the images using docker executable
+			cmdUtils.PromtForConfirmation("Removing given image will remove all the running instances, Do you want to continue?")
 
 			for _, element := range args {
 				// Validate
@@ -66,8 +68,8 @@ func New() *Process {
 
 				// Now remove the image if nothing else is running on the system using the same image.
 				if isImageExist {
-					dps := exec.Command("bash", "-c", fmt.Sprintf("docker ps"))
-					dg := exec.Command("bash", "-c", fmt.Sprintf("grep -i %s", element))
+					dps := exec.Command("docker", "ps", "-a")
+					dg := exec.Command("grep", "-i", element)
 					rDps, wDps := io.Pipe()
 
 					dps.Stdout = wDps
@@ -88,7 +90,7 @@ func New() *Process {
 					}
 
 					if len(string(dgOutput)) == 0 {
-						drmi := exec.Command("docker", "rmi -f", element)
+						drmi := exec.Command("docker", "rmi", "-f", element)
 						if err := drmi.Run(); err != nil {
 							utils.TerminateWithError(err.Error())
 						}
@@ -100,5 +102,5 @@ func New() *Process {
 		},
 	}
 
-	return process
+	return remove
 }
