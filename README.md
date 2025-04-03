@@ -2,47 +2,48 @@
 
 This project creates a golang based CLI that manages docker containers as systemD processes on Linux system.
 
-## Packages used in this module
+# Getting Started
+
+If you are on Ubuntu then directly execute the following command to build CLI
+
+```shell
+$ ./build.sh
+```
+
+Otherwise, To build binary executable execute following in your shell
+
+```shell
+$ go build -o sysd ./cmd/sysd
+```
+
+on successful run of previous command, Test by executing the below command.
+
+```shell
+$ ./sysd --version
+```
+
+**Note:** Execution of this CLI requires root/admin permission as it deals with Systemd.
+
+## Packages/Frameworks used in this CLI
 
 - [Cobra](https://pkg.go.dev/github.com/spf13/cobra)
-- [Service](https://pkg.go.dev/github.com/kardianos/service@v1.2.2) | [Go-Systemd](https://pkg.go.dev/github.com/iguanesolutions/go-systemd/v4#section-readme)
+- [Service](https://pkg.go.dev/github.com/kardianos/service@v1.2.2)
 
 ## TODO
 
-- `Done`: Find a way to start given containerImage (args[0]) as SystemD process.
-- `Done`: Make `svcConfig` stateful so that processes become managable.
-- `Done`: Update `start` to make it able to start processes.
-- `Done`: Update `stop` to make it able to stop processes.
-- `Done`: Update `rm` to make it able to actually remove processes
-- `Done`: `list` make it able to list processes.
-- `Done`: Started systemd processes only goes in activating state (never gets green)
-- `Done`: Create `show` to show service name.
-- `Done`: Updated `rm` to remove multiple instances.
-- `Done`: `ps` to make it able to list running process.
-- `Done`: Update `run` to make it able to install & start processes.
-- `Done`: Update GetDockerExecutablePath to find `docker` executable path
-- `Done`: Currently CLI downloads and runs docker image but there is no way to prune the downloaded images using this CLI that this CLI Downloaded.
-  - Add a sub-cmd `docker` with its following sub-cmds `ls`, `ps`, `rm`, Where
-  - `Done`: `ls` prints the docker images that this CLI has pulled in the system so far and present on the system.
-  - `Done`: `ps` prints the images currently being used.
-  - `Buggy`: `rm` remove an image or all the images (on `all` flag). If the image instance exist on the system then promts user for confirmation.
-- `Done`: Add validation to check if there docker image exist.
-- `Done`: Try to remove sudo prepending before `sysd`.
-- `Done`: Add support for other docker run flags and more to the `run` sub-cmd.
-  - Add support for only relatable flags (Don't think all flags are needed).
-  - Give user options to add docker run flags either imperatively or declaratively.
-- `Done`: Update `run` command to provide same flags.
 - Update printing table so that you don't see `status` column on printing.
 - Enable logging of services.
 - consider to add support for tests.
 - Update other commands so on.
 
-## Going on
-
 ## Commands
 
 - `create`: Register container as Systemd process.
 - `delete`: Deregisters container from SystemD process.
+- `docker`: A group of commands
+  - `list`: To list all the images utilized by systemd processes.
+  - `process`: To list the images currently in-use by running systemd processes.
+  - `remove`: To remove the images utilized by systemd processes.
 - `run`: Registers & Starts running container as SystemD process.
 - `start`: Start running the registered container as Systemd process.
 - `stop`: Stop running the registered container as Systemd process.
