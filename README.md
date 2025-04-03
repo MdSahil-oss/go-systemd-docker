@@ -4,7 +4,7 @@ This project creates a golang based CLI that manages docker containers as system
 
 # Getting Started
 
-If you are on Ubuntu then directly execute the following command to build CLI
+If you are on Ubuntu then directly execute the following command to build CLI (will promt you for root (sudo) user password)
 
 ```shell
 $ ./build.sh
